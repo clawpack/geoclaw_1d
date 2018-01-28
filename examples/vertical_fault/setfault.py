@@ -2,7 +2,7 @@ from __future__ import print_function
 from numpy import arange,cos,sin,pi
 from clawpack.geoclaw.data import LAT2METER
 
-import clawpack.seismic.dtopotools_horiz_okada_and_1d as dtopotools
+import clawpack.geoclaw_1d.dtopotools_horiz_okada_and_1d as dtopotools
 #reload(dtopotools)
 
 def make_fault():

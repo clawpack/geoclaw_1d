@@ -92,4 +92,5 @@ if 1:
     print("Created ",fname)
 
 # make Okada data on this grid:
+print("Running make_qinit_okada.py")
 execfile('make_qinit_okada.py')

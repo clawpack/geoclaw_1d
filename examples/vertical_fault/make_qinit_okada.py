@@ -3,6 +3,7 @@ Make data for qinit by evaluation Okada in the grid cells
 determined by grid.data
 """
 
+from __future__ import print_function
 from pylab import *
 
 import setfault
@@ -25,10 +26,12 @@ dtopo = fault.create_dtopography(x,y,times)
 
 dz = dtopo.dZ[-1,0,:]  # slice in x at final time
 
-savetxt('qinit_okada.data',dz)
+fname = 'qinit_okada.data'
+savetxt(fname,dz)
+print("Created ",fname)
 
 
-if 1:
+if 0:
     figure(351)
     clf()
     plot(xcell,dz)
