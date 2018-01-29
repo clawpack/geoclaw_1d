@@ -16,9 +16,12 @@ x0_slope = 50e3      # start of continental slope
 x0_shelf = 100e3     # start of continental shelf
 
 z0_ocean = -4500.     # depth of ocean = depth at x0_slope
-z0_shelf = -4500.      # depth at x0_shelf
-z0_beach = -4500.       # depth at x0_beach
-z0_shore = -4500.      # depth at x0_shore
+#z0_shelf = -4500.      # depth at x0_shelf
+#z0_beach = -4500.       # depth at x0_beach
+#z0_shore = -4500.      # depth at x0_shore
+z0_shelf = -1500.      # depth at x0_shelf
+z0_beach = -1500.       # depth at x0_beach
+z0_shore = -1500.      # depth at x0_shore
 
 x1 = x0_shore          # no beach
 #x1 = x0_shore + 2e3   # add onshore beach for runup
