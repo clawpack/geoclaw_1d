@@ -31,6 +31,8 @@ except:
     xmax = None
     print "Failed to load fort.hmax"
 
+xmax = None # to suppress plotting max elevation as red curve 
+
 xlimits = [-150e3,0e3]
 
 def setplot(plotdata):
