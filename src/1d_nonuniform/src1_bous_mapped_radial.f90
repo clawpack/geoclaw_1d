@@ -4,7 +4,7 @@
       use bous_module
       use grid_module, only: mx_grid, xgrid, radial
       use geoclaw_module, only: dry_tolerance, grav, DEG2RAD
-      use geoclaw_module, only: ifrictiontype => friction_forcing
+      use geoclaw_module, only: friction_forcing
       use geoclaw_module, only: frictioncoeff => friction_coefficient
 
       implicit none
@@ -42,9 +42,8 @@
       ! forcing term for pressure pulse in atmosphere:
       !call src1_atm(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
-      if (frictioncoeff.gt.0.d0 .and. ifrictiontype.gt.0) then
+      if (frictioncoeff.gt.0.d0 .and. friction_forcing) then
           ! integrate source term based on Manning formula
-          if (ifrictiontype.eq.1) then
             do i=1,mx
                if (q(1,i)<=dry_tolerance) then
                   q(2,i) = 0.0
@@ -53,17 +52,6 @@
                   q(2,i)= q(2,i)/(1.d0 + dt*gamma)
               endif
             enddo
-          elseif (ifrictiontype.eq.2) then
-            do i=1,mx
-               if (q(1,i)<=dry_tolerance) then
-                  q(2,i) = 0.0
-               else
-                  gamma= q(1,i)*grav*dtan(frictioncoeff*DEG2RAD)
-                  gamma = max(0.d0, abs(q(2,i)) - dt*abs(gamma))
-                  q(2,i) = sign(gamma, q(2,i))
-              endif
-            enddo
-          endif
         endif
 
 !      ----------------------------------------------------------------

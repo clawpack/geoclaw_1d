@@ -21,6 +21,7 @@ subroutine read_grid(fname)
 
    open(unit=58, file=fname, status='old',form='formatted')
    read(58,*) mx_grid
+   write(6,*) 'Reading grid with mx_grid = ',mx_grid
    if (mx_grid+1 > mx_grid_max) then
       write(6,*) '*** too many topo values'
       stop
