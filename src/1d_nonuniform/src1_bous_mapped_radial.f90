@@ -32,16 +32,7 @@
       logical verbose
 
       verbose=.False.
-
-      !write(6,*) '+++ t, dt = ',t, dt
-      if (dt > 1d5) then
-        stop
-        endif
-      !write(6,*) '+++ mx, mx_grid: ',mx, mx_grid
            
-      ! forcing term for pressure pulse in atmosphere:
-      !call src1_atm(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
-
       if (frictioncoeff.gt.0.d0 .and. friction_forcing) then
           ! integrate source term based on Manning formula
             do i=1,mx

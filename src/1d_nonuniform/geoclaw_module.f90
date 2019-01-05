@@ -1,4 +1,3 @@
-
 ! ============================================================================
 !  File:        geoclaw_mod
 ! ============================================================================
@@ -8,6 +7,10 @@
 !  license
 !                     http://www.opensource.org/licenses/
 ! ============================================================================
+
+! Adapted from 2d GeoClaw by deleting some thing that are unused in 1d.
+! Other things still remain that are note used in 1d, but they are written to
+! data files by default and so still read in here.
 
 module geoclaw_module
 
@@ -154,105 +157,5 @@ contains
         end if
 
     end subroutine set_geo
-
-
-    ! ==========================================================================
-    !  Calculate the coriolis constant f
-    !   If coordinate_system == 1 then
-    !       A beta-plane approximation is used and y should be in meters
-    !   if coordinate_system == 2 then
-    !       Grid is in lat-long and y should be in degrees which is converted
-    !       to radians
-    ! ==========================================================================
-    real(kind=8) pure function coriolis(y)
-
-        implicit none
-        
-        ! Input
-        real(kind=8), intent(in) :: y
-        
-        ! Locals
-        real(kind=8) :: theta
-        
-        ! Assume beta plane approximation and y is in meters    
-        if (coordinate_system == 1) then
-            theta = y / 111d3 * DEG2RAD + theta_0
-            coriolis = 2.d0 * omega * (sin(theta_0) + (theta - theta_0)     &
-                                                    * cos(theta_0))
-        else if (coordinate_system == 2) then        
-            coriolis = 2.d0 * omega * sin(y * DEG2RAD)
-        else
-            ! Unknown coordinate system, return nothing
-            coriolis = 0.d0
-        endif
-    end function coriolis
-
-    ! ==========================================================================
-    !  Calculate the distance along a sphere
-    !    real(kind=8) spherical_distance(x1,y1,x2,y2)
-    !       x1 = (long,lat)
-    !       x2 = (long,lat)
-    ! ==========================================================================
-    real(kind=8) pure function spherical_distance(x1,y1,x2,y2) result(distance)
-
-        implicit none
-
-        ! Input
-        real(kind=8), intent(in) :: x1,y1,x2,y2
-
-        ! Locals
-        real(kind=8) :: dx ,dy
-
-        dx = (x2 - x1) * DEG2RAD
-        dy = (y2 - y1) * DEG2RAD
-
-        distance = earth_radius * 2.d0 * asin(sqrt(sin(0.5d0*dy)**2 &
-                                   + cos(y1 * DEG2RAD)*cos(y2 * DEG2RAD) &
-                                   * sin(0.5d0*dx)**2))
-
-    end function spherical_distance
-
-    !=================================================================
-    ! Transform long,lat --> (x,y) coordinates.
-    !
-    ! On input:
-    !    coords(2) = (longitude (E/W),latitude (N/S))
-    !    projection_center(2) = (longitude (E/W),latitude (N/S)) - coordinates 
-    !                        where projection is true
-    !
-    ! On output:
-    !    x(2)          (meters)
-    !=================================================================
-    pure function latlon2xy(coords,projection_center) result(x)
-
-        real(kind=8), intent(in) :: coords(2), projection_center(2)
-        real(kind=8) :: x(2)
-
-        x(1) = deg2rad * earth_radius * (coords(1) - &
-                    projection_center(1)) * cos(deg2rad * projection_center(2))
-        x(2) = deg2rad * earth_radius * coords(2)
-
-    end function latlon2xy
-
-    !=================================================================
-    ! Transform (x,y) --> (lat,lon) coordinates.
-    !
-    ! On input:
-    !    x(2) = (meters)          
-    !    projection_center(2) = (longitude (E/W),latitude (N/S)) - coordinates 
-    !                        where projection is true
-    !
-    ! On output:
-    !    coords(2) = (longitude,latitude)
-    !=================================================================
-    pure function xy2latlon(x,projection_center) result(coords)
-
-        real(kind=8), intent(in) :: x(2), projection_center(2)
-        real(kind=8) :: coords(2)
-
-        coords(1) = projection_center(1) + x(1) &
-                / (deg2rad * earth_radius * cos(deg2rad * projection_center(2)))
-        coords(2) = x(2) / (deg2rad * earth_radius)
-    end function xy2latlon
 
 end module geoclaw_module
