@@ -6,6 +6,7 @@ COMMON_MODULES += \
   $(LIB)/utility_module.f90 \
   $(LIB)/geoclaw_module.f90 \
   $(LIB)/gauges_module.f90 \
+  $(LIB)/bous_module.f90 \
   $(LIB)/grid_module.f90 \
 
 COMMON_SOURCES += \
@@ -14,9 +15,9 @@ COMMON_SOURCES += \
   $(LIB)/bc1.f \
   $(LIB)/setaux.f \
   $(LIB)/out1.f \
-  $(LIB)/setprob.f90 \
+  $(LIB)/setprob_bous.f90 \
   $(LIB)/b4step1.f90 \
-  $(LIB)/src1.f90 \
+  $(LIB)/src1_bous_mapped_radial.f90 \
   $(CLAW)/classic/src/1d/driver.f90 \
   $(CLAW)/classic/src/1d/qinit.f \
   $(CLAW)/classic/src/1d/claw1ez.f \
