@@ -25,14 +25,14 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS =  -llapack -lblas -g
+FFLAGS =  -llapack -lblas -O2
 
 # ---------------------------------
 # package sources for this program:
 # ---------------------------------
 
 GEOLIB = $(CLAW)/geoclaw_1d/src/1d_nonuniform
-include $(GEOLIB)/Makefile.geoclaw_1d_nonuniform
+include $(GEOLIB)/Makefile.geoclaw_1d_nonuniform_bous
 
 # ---------------------------------------
 # package sources specifically to exclude
