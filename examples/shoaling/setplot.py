@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os, sys
 from clawpack.geoclaw_1d import geoplot
+from imp import reload
 
 
 import setrun
@@ -12,14 +13,14 @@ reload(mapc2p)  # in case num_cells changed
 from mapc2p import mapc2p
 
 import numpy
-from pylab import find
+#from pylab import find
 
 try:
     fname = '_output/fort.hmax'
     d = numpy.loadtxt(fname)
     etamax = numpy.where(d[:,1]>1e-6, d[:,2], numpy.nan)
     xmax = d[:,0]
-    jmax = find(d[:,1]>0).max()
+    jmax = where(d[:,1]>0)[0].max()
     print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2]))
     print('Loaded hmax from ',fname)
 except:
@@ -34,12 +35,12 @@ def setplot(plotdata):
 
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid
-        ticklabel_format(format='plain',useOffset=False)
+        ticklabel_format(style='plain',useOffset=False)
         grid(True)
 
     def fixticks(current_data):
         from pylab import ticklabel_format, plot,grid
-        ticklabel_format(format='plain',useOffset=False)
+        ticklabel_format(style='plain',useOffset=False)
         if xmax is not None:
             plot(xmax, etamax, 'r')
         grid(True)

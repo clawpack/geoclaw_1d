@@ -12,11 +12,11 @@ import os, sys
 import numpy as np
 from mapc2p import mapc2p
 
-dispersion = False            # Include Boussinesq terms?
+dispersion = True            # Include Boussinesq terms?
 B_param =  1.0 / 15.0         # Parameter for the Boussinesq eqns
 sw_depth0 = 20.              # Use pure SWE if depth less than sw_depth0
-sw_depth1 = 80.              # Use pure Bous if depth greater than sw_depth1
-radial = False               # Include radial source terms?
+sw_depth1 = 20.              # Use pure Bous if depth greater than sw_depth1
+radial = True               # Include radial source terms?
 
 grid = np.loadtxt('grid.data', skiprows=1)
 print('Read grid from grid.data, %i grid values' % grid.shape[0])
