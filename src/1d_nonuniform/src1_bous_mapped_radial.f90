@@ -94,6 +94,19 @@
           q0  = q
 
           !-----------------------
+          if (rk_order == 1) then
+          ! Forward Euler
+      
+          call set_psi(mx,meqn,mbc,dx,q0,maux,aux,psi)
+
+
+          call DGTTRS( 'N', mx+2, 1, DL, D, DU, DU2 &
+                      , IPIV, psi, LDB,INFO )
+        
+          q(2,1:mx) = q(2,1:mx) - delt*psi(2:mx+1)
+          endif
+          
+          !-----------------------
           if (rk_order == 2) then
           ! RK2   
 
