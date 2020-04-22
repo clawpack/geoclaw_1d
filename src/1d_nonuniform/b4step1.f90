@@ -3,9 +3,8 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
     ! Called before each call to step1.
     ! Use to set time-dependent aux arrays or perform other tasks.
 
-    ! this version checks for negative depths and outputs gauge information
+    ! this version checks for negative depths 
 
-    use gauges_module
     use geoclaw_module, only: dry_tolerance
 
     implicit none
@@ -27,22 +26,6 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
          endif
       enddo
 
-
-      if (allocated(igauge)) then
-         mvars = meqn+maux
-         if (.not.allocated(sol)) then
-            allocate(sol(1:mvars))
-         endif
-
-         do ig = 1,mgauges
-            if (t.ge.t0gauge(ig).and.t.le.tFgauge(ig)) then
-               call return_gauge(meqn,maux,mvars,mx,dx,xlower, &
-     &               xgauge(ig),sol(1:mvars),q(1:meqn,1:mx),aux(1:maux,1:mx))
-
-               write(OUTGAUGEUNIT,*) igauge(ig),1,t,(sol(j),j=1,mvars)
-            endif
-         enddo
-      endif
 
 end subroutine b4step1
 

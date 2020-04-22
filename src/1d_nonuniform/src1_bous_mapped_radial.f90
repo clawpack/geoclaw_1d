@@ -4,7 +4,7 @@
       use bous_module
       use grid_module, only: mx_grid, xgrid, radial
       use geoclaw_module, only: dry_tolerance, grav, DEG2RAD
-      use geoclaw_module, only: ifrictiontype => friction_forcing
+      use geoclaw_module, only: friction_forcing
       use geoclaw_module, only: frictioncoeff => friction_coefficient
 
       implicit none
@@ -22,7 +22,6 @@
       real(kind=8)   rk_stage(1:mx,4)
       real(kind=8) :: delt
       integer ::  i,k,ii,nstep,rk_order
-      real(kind=8) tol,x
       integer(kind=4) INFO
      
       INTEGER            LDB
@@ -32,19 +31,9 @@
       logical verbose
 
       verbose=.False.
-
-      !write(6,*) '+++ t, dt = ',t, dt
-      if (dt > 1d5) then
-        stop
-        endif
-      !write(6,*) '+++ mx, mx_grid: ',mx, mx_grid
            
-      ! forcing term for pressure pulse in atmosphere:
-      !call src1_atm(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
-
-      if (frictioncoeff.gt.0.d0 .and. ifrictiontype.gt.0) then
+      if (frictioncoeff.gt.0.d0 .and. friction_forcing) then
           ! integrate source term based on Manning formula
-          if (ifrictiontype.eq.1) then
             do i=1,mx
                if (q(1,i)<=dry_tolerance) then
                   q(2,i) = 0.0
@@ -53,17 +42,6 @@
                   q(2,i)= q(2,i)/(1.d0 + dt*gamma)
               endif
             enddo
-          elseif (ifrictiontype.eq.2) then
-            do i=1,mx
-               if (q(1,i)<=dry_tolerance) then
-                  q(2,i) = 0.0
-               else
-                  gamma= q(1,i)*grav*dtan(frictioncoeff*DEG2RAD)
-                  gamma = max(0.d0, abs(q(2,i)) - dt*abs(gamma))
-                  q(2,i) = sign(gamma, q(2,i))
-              endif
-            enddo
-          endif
         endif
 
 !      ----------------------------------------------------------------
@@ -115,6 +93,19 @@
           rk_stage = 0.d0
           q0  = q
 
+          !-----------------------
+          if (rk_order == 1) then
+          ! Forward Euler
+      
+          call set_psi(mx,meqn,mbc,dx,q0,maux,aux,psi)
+
+
+          call DGTTRS( 'N', mx+2, 1, DL, D, DU, DU2 &
+                      , IPIV, psi, LDB,INFO )
+        
+          q(2,1:mx) = q(2,1:mx) - delt*psi(2:mx+1)
+          endif
+          
           !-----------------------
           if (rk_order == 2) then
           ! RK2   
@@ -210,49 +201,42 @@
 ! =========================================================
       subroutine set_diag(mx,meqn,mbc,dx,q,maux,aux, DL, D, DU)
 ! =========================================================
-      use bous_module
+      use bous_module, only: B_param, sw_depth0
       use geoclaw_module, only: sea_level
       use grid_module, only: xcell, dxm, dxc, cm, cp, c0
 
       implicit none
      
-      integer(kind=4) mx,meqn,mbc,maux,mxy
-      integer(kind=4) i,k
-      real(kind=8) dx
-
-      real(kind=8)   q(meqn,1-mbc:mx+mbc)
-      real(kind=8) aux(maux,1-mbc:mx+mbc)
-
-      DOUBLE PRECISION   D(mx+2), DL(mx+1), DU(mx+1)                
+      integer(kind=4), intent(in) :: mx,meqn,mbc,maux
+      real(kind=8), intent(in) ::  dx
+      real(kind=8), intent(in) ::    q(meqn,1-mbc:mx+mbc)
+      real(kind=8), intent(in) ::  aux(maux,1-mbc:mx+mbc)
+      real(kind=8), intent(out) ::   D(mx+2), DL(mx+1), DU(mx+1)                
       
       real(kind=8), dimension(1-mbc:mx+mbc) :: h0, hh, hhh
-      
+      real(kind=8) :: tol
+      integer(kind=4) :: i,k,mxy
+
       h0 = sea_level - aux(1,:)
+      tol = 1d-4   ! for testing h0 and q(1).  Good value?
      
         do i=1-mbc,mx+mbc
            hh(i)=(max(0.,h0(i)))**2
            hhh(i)=(max(0.,h0(i)))**3
         enddo
       
+        ! initialize to identity matrix:
         D = 1.d0
         DU= 0.d0
         DL= 0.d0
-
    
         do i=1,mx
-        
-            if ((minval(q(1,i-2:i+2)) < 0.1d0) &
-                .or. (minval(h0(i-2:i+2)) < 0.1d0)) then
-
-            !if ((q(1,i)<0.1d0) .or. (h0(i)<0.1d0) .or. &
-            !    (minval(h0(i-2:i+2))<0.1d0) .or. &
-            !    (maxval(q(1,i-2:i+2))<0.1d0) .or. &
-            !    (minval(h0(i-1:i+1))<=0.1d0)) then
-
-              ! do nothing
-        
-            else
-
+            
+            if ((h0(i) > sw_depth0) .and. &
+                (minval(q(1,i-2:i+2)) >= tol) .and. &
+                (minval(h0(i-2:i+2)) >= tol)) then
+                
+              ! replace this row of identity matrix with dispersion terms:
 
               D(i+1) = 1.d0 + c0(i)*((B_param+.5d0)*hh(i) &
                     - 1.d0/6.d0*hhh(i)/h0(i))
@@ -279,8 +263,8 @@
 !======================================================================
       subroutine set_psi(mx,meqn,mbc,dx,q,maux,aux,psi)
 
-      use geoclaw_module, only: g => grav, sea_level
-      use bous_module
+      use geoclaw_module, only: g => grav, sea_level, dry_tolerance
+      use bous_module, only: B_param, sw_depth0, sw_depth1
       use grid_module, only: xcell, dxm, dxc, cm, cp, c0
      
       implicit none
@@ -292,22 +276,16 @@
       real(kind=8), intent(in) :: aux(maux,1-mbc:mx+mbc)
       real(kind=8), intent(out) :: psi(mx+2)
 
-      real(kind=8)  tol
       real(kind=8)  depth
       real(kind=8), dimension(1-mbc:mx+mbc) :: h0, hh, hhh, eta, hu2
       real(kind=8), dimension(1-mbc:mx+mbc) :: hetax,detax,s1,s1_h
       real(kind=8)  detaxxx,s1xx,s1_hxx
       integer :: i,j,k,kk,iL,iR
-
-      ! phase out dispersive term between sw_depth0 and sw_depth1:
-      ! parameters now in bous_module
-      !sw_depth0 = 180.d0  ! pure SWE in shallower water than this
-      !sw_depth1 = 190.d0  ! full Bouss in deeper water than this
     
       h0 = sea_level - aux(1,:)
      
          do i=1-mbc,mx+mbc
-           if (q(1,i).gt.1d-4) then
+           if (q(1,i).gt.dry_tolerance) then
               hu2(i)= q(2,i)**2/q(1,i)
              else
               hu2(i)= 0.d0
@@ -359,8 +337,6 @@
            endif
      enddo
      
-      tol = 1d-8
-
      !write(6,*) '+++ s1(0:1): ',s1(0),s1(1)
      !write(6,*) '+++ s1_h(0:1): ',s1_h(0),s1_h(1)
      !write(6,*) '+++ detax(0:1): ',detax(0),detax(1)
@@ -374,7 +350,7 @@
 
            k = i+1
 
-           if ((h0(i) < sw_depth0) .or. (q(1,i) < sw_depth0)) then
+           if (h0(i) <= sw_depth0) then
               ! no dispersive term:
               psi(k) = 0.d0
 
@@ -400,7 +376,7 @@
            endif
 
 
-        if (h0(i) .lt. sw_depth1) then
+        if ((h0(i) > sw_depth0) .and. (h0(i) < sw_depth1)) then
             ! reduce psi linearly between sw_depth0 and sw_depth1:
             psi(k) = psi(k) * (h0(i)-sw_depth0)/(sw_depth1-sw_depth0)
             endif

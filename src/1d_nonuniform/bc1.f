@@ -7,6 +7,8 @@ c     =================================================================
 c
 c     # Standard boundary condition choices for claw2
 c
+c     # Modified for 1d GeoClaw to extend topo aux(1,:) to ghost cells.
+c
 c     # At each boundary  k = 1 (left),  2 (right):
 c     #   mthbc(k) =  0  for user-supplied BC's (must be inserted!)
 c     #            =  1  for zero-order extrapolation
