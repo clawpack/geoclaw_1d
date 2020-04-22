@@ -1,5 +1,5 @@
 #get the directory of this makefile
-LIB:=$(CLAW)/geoclaw_1d/src/1d_nonuniform
+LIB:=$(BoussDev)/geoclaw_1d/src/1d_nonuniform
 
 #list of common sources:
 COMMON_MODULES += \
