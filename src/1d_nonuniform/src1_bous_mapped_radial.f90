@@ -29,6 +29,8 @@
       DOUBLE PRECISION   D(mx+2), DL(mx+1), DU(mx+1), DU2(1:mx)             
       
       logical verbose
+      real(kind=8) :: DLi
+
 
       verbose=.False.
            
@@ -81,11 +83,24 @@
      DL =0.d0
      DU2=0.d0
 
-     rk_order = 2
+     rk_order = 1
     
      do ii=1,nstep
 
           call set_diag(mx,meqn,mbc,dx,q,maux,aux, DL, D, DU)
+          
+  661     format(3e16.6)
+          if (.false.) then
+              write(66,*) 'D matrix:'
+              do i=1,mx+2
+                  if (i>1) then
+                      DLi = DL(i-1)
+                  else
+                      DLi = -9999.
+                  endif
+                  write(66,661) DLi, D(i), DU(i)
+              enddo
+          endif
 
           call DGTTRF( mx+2, DL, D, DU, DU2, IPIV, INFO )
     
@@ -99,10 +114,25 @@
       
           call set_psi(mx,meqn,mbc,dx,q0,maux,aux,psi)
 
+          if (.false.) then
+              write(66,*) 'RHS psi:'
+              do i=1,mx+2
+                  write(66,661) psi(i)
+              enddo
+          endif
+              
 
           call DGTTRS( 'N', mx+2, 1, DL, D, DU, DU2 &
                       , IPIV, psi, LDB,INFO )
-        
+                      
+                      
+          if (.false.) then
+              write(66,*) 'Solution psi, dt = ', delt
+              do i=1,mx+2
+                  write(66,661) psi(i)
+              enddo
+          endif
+          
           q(2,1:mx) = q(2,1:mx) - delt*psi(2:mx+1)
           endif
           
@@ -201,7 +231,7 @@
 ! =========================================================
       subroutine set_diag(mx,meqn,mbc,dx,q,maux,aux, DL, D, DU)
 ! =========================================================
-      use bous_module, only: B_param, sw_depth0
+      use bous_module, only: B_param, sw_depth0, bc_xlo, bc_xhi
       use geoclaw_module, only: sea_level
       use grid_module, only: xcell, dxm, dxc, cm, cp, c0
 
@@ -250,13 +280,55 @@
             endif
             
         enddo
+        
+      ! left boundary
+      ! No change ==> Dirichlet value 0 in ghost cell
+      
 
-      if (.true.) then
+      if (bc_xlo==3) then
+         ! for wall-reflecting BC at left: impose Q_0 = -Q_1
+         DU(1) = 1.d0     
+         endif
+      if (bc_xlo==1) then
+         ! for Neumann BC at left: impose Q_0 = Q_1
+         DU(1) = -1.d0     
+         endif
+         
+      ! other things tested:
+      if (.false.) then
          ! for wall-reflecting BC at left: impose Q_0 = -Q_1
          D(2) = D(2) - DL(1)   
          DL(1) = 0.d0     
          endif
-             
+      if (.false.) then
+         ! for zero Dirichlet at left: impose Q_0 = 0
+         DL(1) = 0.d0     
+         endif
+      if (.false.) then
+         ! for Neumann BC at left: impose Q_0 = Q_1
+         D(2) = D(2) + DL(1)   
+         DL(1) = 0.d0     
+         endif
+
+    
+      ! right boundary
+      ! No change ==> Dirichlet value 0 in ghost cell
+            
+      if (bc_xhi==1) then
+         ! for Neumann at right:
+         DL(mx+1) = -1.d0
+         endif
+      if (bc_xhi==3) then
+         ! wall at right:
+         DL(mx+1) = 1.d0
+         endif
+
+      if (.false.) then
+         ! for Neumann at right:
+         D(mx+1) = D(mx+1) + DU(mx+1)
+         DU(mx+1) = 0.d0
+         endif
+                  
       return
       end subroutine set_diag
    
@@ -299,13 +371,14 @@
      detax = 0.d0
      !write(6,*) '+++ eta(0:1): ',eta(0),eta(1)
 
-         do i= 1,mx
+         ! extend to one set of ghost cells:
+         do i= 0,mx+1
          if (minval(h0(i-1:i+1)) > 0.d0) then
-            if (i<1) then
+            if (i<0) then
                 !write(6,*) '+++ dxm = ', (dxm(j), j=1,4)
                 hetax(i)= q(1,i)*(eta(i+1)-eta(i))/dxm(i+1)
                 detax(i)= h0(i)*(eta(i+1)-eta(i))/dxm(i+1)
-            elseif (i>mx) then
+            elseif (i>mx+1) then
                 hetax(i)= q(1,i)*(eta(i)-eta(i-1))/dxm(i)
                 detax(i)= h0(i)*(eta(i)-eta(i-1))/dxm(i)
             else
@@ -319,10 +392,11 @@
      s1_h=0.d0
 
      !write(6,*) '+++ hu2(0:1): ',hu2(0),hu2(1)
-     do i=1,mx
-          if (i<1) then
+     !write(66,*) 'detax, h0, eta, s1, s1_h:'
+     do i=0,mx+1
+          if (i<0) then
              s1(i)= (hu2(i+1)-hu2(i))/dxm(i+1)
-          elseif (i>mx) then
+          elseif (i>mx+1) then
              s1(i)= (hu2(i)-hu2(i-1))/dxm(i)
           else
              s1(i)= (hu2(i+1)-hu2(i-1))/dxc(i)
@@ -335,14 +409,21 @@
            else
               s1_h(i)=0.d0
            endif
+          !write(66,662) detax(i),h0(i),eta(i),s1(i),s1_h(i)
+ 662      format(5e16.6)
+ 663      format(i3,4e16.6)
      enddo
      
      !write(6,*) '+++ s1(0:1): ',s1(0),s1(1)
      !write(6,*) '+++ s1_h(0:1): ',s1_h(0),s1_h(1)
      !write(6,*) '+++ detax(0:1): ',detax(0),detax(1)
-     s1(0) = s1(1)
-     s1_h(0) = s1_h(1)
-     detax(0) = detax(1)
+     !s1(0) = s1(1)
+     !s1_h(0) = s1_h(1)
+     !detax(0) = detax(1)
+     
+     !s1(mx+1) = s1(mx)
+     !s1_h(mx+1) = s1_h(mx)
+     !detax(mx+1) = detax(mx)
 
       psi = 0.d0
 
@@ -369,6 +450,13 @@
               detaxxx = cp(j)*detax(j+1) - c0(j)*detax(j) + &
                         cm(j)*detax(j-1)
               s1_hxx = cp(j)*s1_h(j+1) - c0(j)*s1_h(j) + cm(j)*s1_h(j-1)
+              
+              !if ((i==1) .or. (i==mx)) then
+              if (.false.) then
+                 s1xx =  0.d0
+                 detaxxx = 0.d0
+                 s1_hxx = 0.d0
+              endif
 
               psi(k) = (B_param+.5d0)*hh(i)*s1xx - B_param*g*hh(i)*detaxxx &
                   -hhh(i)/6.d0 * s1_hxx

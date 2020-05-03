@@ -8,7 +8,7 @@ module grid_module
     logical :: radial
     real(kind=8), dimension(0:mx_grid_max+1) :: dxm, dxc, cm, cp, c0
 
-    real(kind=8), dimension(0:mx_grid_max+1) ::  xgrid, zgrid, xcell
+    real(kind=8), dimension(-1:mx_grid_max+3) ::  xgrid, zgrid, xcell
 
 contains
 
@@ -35,21 +35,26 @@ subroutine read_grid(fname)
       
    ! extend to ghost cells, to have same width as first interior cell:
    xgrid(0) = 2.d0*xgrid(1) - xgrid(2)
+   xgrid(-1) = 2.d0*xgrid(0) - xgrid(1)
    xgrid(mx_grid+2) = 2.d0*xgrid(mx_grid+1) - xgrid(mx_grid)
+   xgrid(mx_grid+3) = 2.d0*xgrid(mx_grid+2) - xgrid(mx_grid+1)
    zgrid(0) = zgrid(1)
+   zgrid(-1) = zgrid(1)
    zgrid(mx_grid+2) = zgrid(mx_grid+1)
+   zgrid(mx_grid+3) = zgrid(mx_grid+1)
 
-   do i=0,mx_grid+1
+   do i=-1,mx_grid+2
       ! cell centers based on grid edges:
       xcell(i) = 0.5d0*(xgrid(i) + xgrid(i+1))
       enddo
 
-   do i=1,mx_grid+1
+   do i=0,mx_grid+2
       dxm(i) = xcell(i) - xcell(i-1)
       enddo
 
-
-   do i=1,mx_grid
+   write(6,*) '+++ radial = ',radial
+   
+   do i=0,mx_grid+1
       ! define coefficients cm(i), cp(i), c0(i) so that 
       !   q_{xx} \approx cm(i)*Q(i-1) - c0(i)*Q(i) + cp(i)*Q(i+1)
       ! Note that approximation is not centered at xcell(i), so only 1st order
