@@ -269,7 +269,7 @@
               ! replace this row of identity matrix with dispersion terms:
 
               D(i+1) = 1.d0 + c0(i)*((B_param+.5d0)*hh(i) &
-                    - 1.d0/6.d0*hhh(i)/h0(i))
+                    - 1.d0/6.d0*hhh(i)/h0(i)) !+ 1.d0/xcell(i) ! new term
      
               DU(i+1)= -cp(i)*((B_param+.5d0)*hh(i) &
                     - 1.d0/6.d0*hhh(i)/h0(i+1))
@@ -362,6 +362,7 @@
              else
               hu2(i)= 0.d0
              endif
+           !hu2(i) = 0.d0  ! Debug: turning off nonlinear terms
            eta(i)= q(1,i) - h0(i)
            hh(i)=(max(0.d0,h0(i)))**2
            hhh(i)=(max(0.d0,h0(i)))**3
@@ -399,7 +400,10 @@
           elseif (i>mx+1) then
              s1(i)= (hu2(i)-hu2(i-1))/dxm(i)
           else
-             s1(i)= (hu2(i+1)-hu2(i-1))/dxc(i)
+             !s1(i)= (hu2(i+1)-hu2(i-1))/dxc(i)  ! original, missing term
+             s1(i)= (hu2(i+1)-hu2(i-1))/dxc(i) + hu2(i)/xcell(i)
+             !s1(i)= (xcell(i+1)*hu2(i+1)-xcell(i-1)*hu2(i-1)) &
+             !        / (xcell(i)*dxc(i))
           endif
          
           s1(i)= s1(i)+g*hetax(i)
@@ -460,7 +464,7 @@
 
               psi(k) = (B_param+.5d0)*hh(i)*s1xx - B_param*g*hh(i)*detaxxx &
                   -hhh(i)/6.d0 * s1_hxx
-                 
+                                   
            endif
 
 
