@@ -6,7 +6,7 @@ COMMON_MODULES += \
   $(LIB)/utility_module.f90 \
   $(LIB)/geoclaw_module.f90 \
   $(LIB)/gauges_module.f90 \
-  $(LIB)/grid_module_bouss.f90 \
+  $(LIB)/grid_module.f90 \
   $(LIB)/bouss_module.f90 \
 
 COMMON_SOURCES += \
