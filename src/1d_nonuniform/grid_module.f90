@@ -18,8 +18,11 @@ subroutine read_grid(fname)
    character(len=*), intent(in) :: fname
    integer :: i,j
    real(kind=8) :: rim,rip,ric,c0i,cmi,cpi,r
+   logical :: junk
 
    open(unit=58, file=fname, status='old',form='formatted')
+   read(58,*) junk
+   read(58,*) junk
    read(58,*) mx_grid
    write(6,*) 'Reading grid with mx_grid = ',mx_grid
    if (mx_grid+1 > mx_grid_max) then
