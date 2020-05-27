@@ -80,11 +80,8 @@ contains
     
     !h0 = sea_level - aux(1,:)  # resting depth
 
-    !write(66,*) 'cm,c0,cp:'
     do i=1-mbc,mx+mbc
-        !zcell = 0.5d0*(zgrid(i) + zgrid(i+1))
         h0(i) = sea_level - zcell(i)
-        !write(66,666) i,cm(i),c0(i),cp(i)
   666   format(i3,3e16.6)
         h02(i)=(max(0.,h0(i)))**2
         h03(i)=(max(0.,h0(i)))**3
