@@ -7,7 +7,7 @@ COMMON_MODULES += \
   $(LIB)/geoclaw_module.f90 \
   $(LIB)/gauges_module.f90 \
   $(LIB)/bous_module.f90 \
-  $(LIB)/grid_module.f90 \
+  $(LIB)/grid_module_bous.f90 \
 
 COMMON_SOURCES += \
   $(LIB)/claw1ez.f \
