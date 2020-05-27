@@ -8,7 +8,8 @@ module grid_module
     logical :: radial, uniform_grid
     real(kind=8), dimension(0:mx_grid_max+1) :: dxm, dxc, cm, cp, c0
 
-    real(kind=8), dimension(-1:mx_grid_max+3) ::  xgrid, zgrid, xcell
+    ! assume mbc==2 ghost cells:
+    real(kind=8), dimension(-1:mx_grid_max+3) ::  xgrid, zgrid, xcell, zcell
 
 contains
 
@@ -60,6 +61,7 @@ subroutine set_grid(mx,dx)
     do i=-1,mx_grid+2
         ! cell centers based on grid edges:
         xcell(i) = 0.5d0*(xgrid(i) + xgrid(i+1))
+        zcell(i) = 0.5d0*(zgrid(i) + zgrid(i+1))
     enddo
 
     do i=0,mx_grid+2

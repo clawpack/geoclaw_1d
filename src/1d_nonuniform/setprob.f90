@@ -7,8 +7,6 @@ subroutine setprob
    use gauges_module, only: set_gauges
    use geoclaw_module, only: set_geo
 
-   use grid_module, only: read_grid, radial
-
    implicit none
    integer :: ndim, iunit
    common /comsrc/ ndim
@@ -17,7 +15,5 @@ subroutine setprob
 
    call set_gauges(.false., 2) ! no restart, nvar=2
    call set_geo()
-
-   call read_grid('grid.data')
 
 end subroutine setprob

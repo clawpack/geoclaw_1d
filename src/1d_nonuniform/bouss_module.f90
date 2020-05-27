@@ -21,20 +21,29 @@ contains
     
     ! Set things up for Boussinesq solver, in particular
     ! create and factor tridiagonal matrix for implicit solves.
-    
-    ! Boussinesq equation parameter B_param is now set in setprob    
-
 
     use geoclaw_module, only: sea_level
-    use grid_module, only: xcell, zgrid, dxm, dxc, cm, cp, c0
+    use grid_module, only: xcell, zcell, dxm, dxc, cm, cp, c0
     
     implicit none
     integer, intent(in) :: mx, mbc, mthbc(2)
-    real(kind=8) :: DLi, zcell
-    integer :: i
+    real(kind=8) :: DLi
+    integer :: i, iunit
+    character*25 fname
     real(kind=8), dimension(1-mbc:mx+mbc) :: h0, h02, h03
     integer(kind=4) :: INFO
+    
+    iunit = 7
+    fname = 'bouss.data'
+ !  # open the unit with new routine from Clawpack 4.4 to skip over
+ !  # comment lines starting with #:
+    call opendatafile(iunit, fname)
 
+    read(7,*) bouss
+    read(7,*) B_param
+    read(7,*) sw_depth0
+    read(7,*) sw_depth1
+    
 
     ! Boundary conditions to impose in computing Boussinesq update:
     
@@ -71,9 +80,12 @@ contains
     
     !h0 = sea_level - aux(1,:)  # resting depth
 
+    !write(66,*) 'cm,c0,cp:'
     do i=1-mbc,mx+mbc
-        zcell = 0.5d0*(zgrid(i) + zgrid(i+1))
-        h0(i) = sea_level - zcell
+        !zcell = 0.5d0*(zgrid(i) + zgrid(i+1))
+        h0(i) = sea_level - zcell(i)
+        !write(66,666) i,cm(i),c0(i),cp(i)
+  666   format(i3,3e16.6)
         h02(i)=(max(0.,h0(i)))**2
         h03(i)=(max(0.,h0(i)))**3
     enddo
@@ -89,7 +101,7 @@ contains
 
     do i=1,mx
     
-        ! Modify row i+1 (equation for i'th grid cell)
+        ! Modify row i+1 (equation for i'th grid cell) to form (I-d^2) operator,
         ! unless this is a cell where SWE are used, then leave as row of I
         ! and set RHS to 0, so no modification to SWE result.
         
@@ -144,7 +156,7 @@ contains
     ! factor the tridiagonal matrix:    
     call DGTTRF( mx+2, DL, D, DU, DU2, IPIV, INFO )    
     
-    if (.true.) then
+    if (.false.) then
         ! DEBUG:
         write(66,*) 'D matrix:'
         do i=1,mx+2
@@ -300,7 +312,7 @@ contains
             
     enddo
     
-    if (.true.) then
+    if (.false.) then
         write(66,*) 'RHS:'
         do i=1,mx+2
             write(66,*) psi(i)
@@ -316,7 +328,7 @@ contains
     call DGTTRS( 'N', mx+2, 1, DL, D, DU, DU2, &
                  IPIV, psi, LDB,INFO )
                                 
-    if (.true.) then
+    if (.false.) then
         write(66,*) 'Solution psi: '
         do i=1,mx+2
             write(66,*) psi(i)
