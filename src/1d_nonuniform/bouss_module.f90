@@ -9,6 +9,12 @@ module bouss_module
     ! for tridiagonal solver:
     integer, allocatable, dimension(:) :: IPIV
     real(kind=8), allocatable, dimension(:) :: D, DL, DU, DU2    
+
+    ! to keep track of max depth over all time:
+    integer :: imax0
+    integer, parameter :: mx_grid_max = 50000
+    real(kind=8), dimension(mx_grid_max) ::  hmax
+
     
     save
 
@@ -32,6 +38,8 @@ contains
     character*25 fname
     real(kind=8), dimension(1-mbc:mx+mbc) :: h0, h02, h03
     integer(kind=4) :: INFO
+
+    hmax(:) = 0.d0
     
     iunit = 7
     fname = 'bouss.data'
@@ -150,8 +158,6 @@ contains
         DL(mx+1) = 1.d0
     endif
 
-    ! factor the tridiagonal matrix:    
-    call DGTTRF( mx+2, DL, D, DU, DU2, IPIV, INFO )    
     
     if (.false.) then
         ! DEBUG:
@@ -165,8 +171,12 @@ contains
             write(66,661) DLi, D(i), DU(i)
   661       format(3e16.6)
         enddo
+        write(66,*) '===== end of D'
     endif
 
+
+    ! factor the tridiagonal matrix:    
+    call DGTTRF( mx+2, DL, D, DU, DU2, IPIV, INFO )
 
     end subroutine set_bouss
     
@@ -245,6 +255,8 @@ contains
         !      = (h*u**2)_r + (1/r)*h*u**2 + r*g*h*eta_r
     
         s1(i) =  (hu2(i+1) - hu2(i-1)) / dxc(i) + g*h_eta_x(i)
+        !s1(i) =  g*h_eta_x(i)  ! debug
+        !s1(i) =  (hu2(i+1) - hu2(i-1)) / dxc(i) 
                  
         if (radial) then
             ! add term for (1/r)*h*u**2:
@@ -297,6 +309,16 @@ contains
             psi(k) = -(B_param+.5d0) * h02(i) * s1_xx &
                         + h03(i)/6.d0 * s1_h0_xx &
                         + B_param * g * h02(i) * h0_eta_xxx
+            if (.false.) then
+                write(66,*) '+++i,rhs(i+1): ',i, psi(k)
+                write(66,*) (B_param+.5d0) * h02(i), s1_xx
+                write(66,*) h03(i)/6.d0,  s1_h0_xx 
+                write(66,*) B_param * g * h02(i) * h0_eta_xxx
+                write(66,*) B_param,  g,  h02(i),  h0_eta_xxx
+                write(66,*) s1(i)
+                write(66,*) h0_eta_x(i)
+                write(66,*) eta(i)
+            endif
               
                                
         endif
@@ -312,7 +334,7 @@ contains
     if (.false.) then
         write(66,*) 'RHS:'
         do i=1,mx+2
-            write(66,*) psi(i)
+            write(66,*) '+++i,rhs: ',i, psi(i)
         enddo
     endif
     
@@ -328,7 +350,7 @@ contains
     if (.false.) then
         write(66,*) 'Solution psi: '
         do i=1,mx+2
-            write(66,*) psi(i)
+            write(66,*) '+++ i,psi: ',i,psi(i)
         enddo
     endif
 

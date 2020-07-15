@@ -15,6 +15,9 @@ c
       use bouss_module, only: set_bouss
       use grid_module, only: set_grid
 
+      use grid_module, only: xgrid
+      use bouss_module, only: imax0, hmax
+
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
 
@@ -310,6 +313,18 @@ c
       end do
 c
   900 continue
+
+       write(6,*) 'Writing file with imax0,mx = ',imax0,mx
+       open(unit=45, file='fort.hmax', status='unknown',
+     &      form='formatted')
+       do i=imax0,mx-1
+          x = 0.5d0*(xgrid(i)+xgrid(i+1))
+          eta = hmax(i) + aux(1,i)
+          write(45,451) x,hmax(i),eta,aux(1,i)
+ 451      format(4f16.8)
+          enddo
+
+
       if (allocated(q))        deallocate(q)
       if (allocated(aux))      deallocate(aux)
       if (allocated(work))     deallocate(work)
