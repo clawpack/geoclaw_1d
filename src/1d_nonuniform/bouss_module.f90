@@ -76,6 +76,11 @@ contains
         bc_xhi = 3
     endif
 
+    if (mthbc(1)==0) then
+        ! For wavemaker BC at left
+        bc_xlo = 3
+    endif
+
     ! To try out Neumann BCs:
     ! This doesn't seem to work well, so not a general option
     !bc_xlo = 1
@@ -265,7 +270,7 @@ contains
         
         ! compute s1_h0 = s1 / h0:
         
-        if (h0(i) > 0.1d0) then 
+        if (h0(i) > dry_tolerance) then
             s1_h0(i)=s1(i)/h0(i)
         else
             s1_h0(i)=0.d0
