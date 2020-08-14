@@ -10,12 +10,6 @@ module bouss_module
     integer, allocatable, dimension(:) :: IPIV
     real(kind=8), allocatable, dimension(:) :: D, DL, DU, DU2    
 
-    ! to keep track of max depth over all time:
-    integer :: imax0
-    integer, parameter :: mx_grid_max = 50000
-    real(kind=8), dimension(mx_grid_max) ::  hmax
-
-    
     save
 
 
@@ -39,8 +33,6 @@ contains
     real(kind=8), dimension(1-mbc:mx+mbc) :: h0, h02, h03
     integer(kind=4) :: INFO
 
-    hmax(:) = 0.d0
-    
     iunit = 7
     fname = 'bouss.data'
  !  # open the unit with new routine from Clawpack 4.4 to skip over

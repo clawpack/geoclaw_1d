@@ -11,6 +11,10 @@ module grid_module
     ! assume mbc==2 ghost cells:
     real(kind=8), dimension(-1:mx_grid_max+3) ::  xgrid, zgrid, xcell, zcell
 
+    ! to keep track of max depth, speed over all time:
+    real(kind=8), allocatable, dimension(:) ::  hmax, smax
+
+
 contains
 
 subroutine set_grid(mx,dx)
@@ -24,6 +28,7 @@ subroutine set_grid(mx,dx)
     integer :: i,j
     real(kind=8) :: rim,rip,ric,c0i,cmi,cpi,r
 
+    
     fname_grid = 'grid.data'
 
     open(unit=58, file=fname_grid, status='old',form='formatted')
@@ -100,6 +105,12 @@ subroutine set_grid(mx,dx)
             c0(i) = c0(i) - 1.d0/(r**2)
         endif
     enddo
+
+    ! for keeping track of max depth, speed over all time:
+    ! initialize here and update in b4step1
+    allocate(hmax(mx_grid), smax(mx_grid))
+    hmax(:) = 0.d0
+    smax(:) = 0.d0
     
 end subroutine set_grid
 

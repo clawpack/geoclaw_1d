@@ -16,7 +16,7 @@ c
       use grid_module, only: set_grid
 
       use grid_module, only: xgrid
-      use bouss_module, only: imax0, hmax
+      use grid_module, only: hmax, smax
 
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
@@ -31,6 +31,7 @@ c
       logical :: outaux_init_only, use_fwaves, output_t0
       logical :: outaux_always, dt_variable
       character*12 fname
+      integer :: hmaxunit
 c
       open(10,file='fort.info',status='unknown',form='formatted')
 
@@ -314,13 +315,15 @@ c
 c
   900 continue
 
-       write(6,*) 'Writing file with imax0,mx = ',imax0,mx
-       open(unit=45, file='fort.hmax', status='unknown',
+       hmaxunit = 45
+       write(6,*) 'Writing hmax file with mx = ',mx
+       open(unit=hmaxunit, file='fort.hmax', status='unknown',
      &      form='formatted')
-       do i=imax0,mx-1
+       rewind hmaxunit
+       do i=1,mx
           x = 0.5d0*(xgrid(i)+xgrid(i+1))
-          eta = hmax(i) + aux(1,i)
-          write(45,451) x,hmax(i),eta,aux(1,i)
+          etamax = hmax(i) + aux(1,i)
+          write(hmaxunit,451) x,hmax(i),etamax,smax(i)
  451      format(4f16.8)
           enddo
 
