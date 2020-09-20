@@ -12,6 +12,9 @@ c
 c     ! Modified for Boussinesq version
 c
 
+      use gauges_module, only: set_gauges
+      use geoclaw_module, only: set_geo
+
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
 
@@ -173,6 +176,11 @@ c     # time increments between outputing solution:
          dtout = (tfinal - t0)/float(nout)
          endif
 c
+
+c     # set gauges and geoclaw specific quantities:
+
+      call set_gauges(.false., 2) ! no restart, nvar=2
+      call set_geo()
 c
 c     # call user's routine setprob to set any specific parameters
 c     # or other initialization required.
