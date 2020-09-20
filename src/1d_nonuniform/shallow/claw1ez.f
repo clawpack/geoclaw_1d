@@ -12,8 +12,6 @@ c
 c     ! Modified for Boussinesq version
 c
 
-      use bous_module, only: set_bous
-
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
 
@@ -179,7 +177,6 @@ c
 c     # call user's routine setprob to set any specific parameters
 c     # or other initialization required.
 c
-      call set_bous(mthbc)
       call setprob
 
       ! Allocate aux
