@@ -25,7 +25,7 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     real(kind=8), intent(inout) ::  q(meqn,1-mbc:mx+mbc)
 
     !Locals
-    real(kind=8) :: gamma
+    real(kind=8) :: gamma, rcell, u
     integer :: i
 
       if (frictioncoeff.gt.0.d0 .and. friction_forcing) then
