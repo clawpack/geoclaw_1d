@@ -12,8 +12,8 @@ CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 # Adjust these variables if desired:
 # ----------------------------------
 
-CLAW_PKG = classic                  # Clawpack package to use
-EXE = xclaw                         # Executable to create
+CLAW_PKG = geoclaw                  # Clawpack package to use
+EXE = xgeo                          # Executable to create
 SETRUN_FILE = setrun.py             # File containing function to make data
 OUTDIR = _output                    # Directory for output
 SETPLOT_FILE = setplot.py           # File containing function to set plots
@@ -25,46 +25,51 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS =  -llapack -lblas -O2
+FFLAGS ?=
 
 # ---------------------------------
-# List of sources for this program:
+# package sources for this program:
 # ---------------------------------
 
-#GEOLIB = $(CLAW)/geoclaw/src/1d/shallow
-GEOLIB = ../../src/1d_nonuniform
+GEOLIB = $(CLAW)/geoclaw_1d/src/1d_nonuniform/shallow
+include $(GEOLIB)/Makefile.geoclaw_1d_nonuniform
+
+# ---------------------------------------
+# package sources specifically to exclude
+# (i.e. if a custom replacement source
+#  under a different name is provided)
+# ---------------------------------------
+
+EXCLUDE_MODULES = \
+
+EXCLUDE_SOURCES = \
+
+# ----------------------------------------
+# List of custom sources for this program:
+# ----------------------------------------
 
 MODULES = \
-  $(GEOLIB)/gauges_module.f90 \
-  $(GEOLIB)/geoclaw_module.f90 \
-  $(GEOLIB)/bous_module.f90 \
-  $(GEOLIB)/grid_module.f90 \
-  setprob_module.f90 \
 
 SOURCES = \
-  qinit.f \
-  setaux.f \
-  $(GEOLIB)/src1_bous_mapped_radial.f90 \
-  setprob.f90 \
-  claw1ez.f \
-  b4step1.f90 \
-  $(CLAW)/riemann/src/geoclaw_riemann_utils.f \
-  $(GEOLIB)/rp1_geoclaw.f90 \
-  $(GEOLIB)/bc1.f \
-  $(GEOLIB)/out1.f \
-  $(CLAW)/classic/src/1d/driver.f90 \
-  $(CLAW)/classic/src/1d/inlinelimiter.f90 \
-  $(CLAW)/classic/src/1d/step1.f90 \
-  $(CLAW)/classic/src/1d/claw1.f \
-  $(CLAW)/classic/src/1d/copyq1.f \
-  $(CLAW)/classic/src/1d/opendatafile.f
+  qinit.f90 \
+
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
 
-grid:
+# Construct the topography data
+.PHONY: topo dtopo all
+
+topo:
 	python makegrid.py
 
-okada:
+dtopo:
 	python make_qinit_okada.py
+
+all: 
+	$(MAKE) topo
+	$(MAKE) dtopo
+	$(MAKE) .plots
+	$(MAKE) .htmls
+

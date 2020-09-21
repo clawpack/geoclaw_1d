@@ -1,11 +1,13 @@
 
 
 import os, sys
-#sys.path.append(os.path.abspath('../..'))
+from imp import reload
+
+
 try:
     from clawpack.geoclaw_1d import geoplot
 except:
-    print 'Could not import from geoclaw_1d'
+    print('Could not import from geoclaw_1d')
 
 #import clawpack.geoclaw.shallow_1d.plot as geoplot
 
@@ -14,22 +16,21 @@ rundata=setrun.setrun()
 
 import mapc2p
 reload(mapc2p)  # in case num_cells changed
-from mapc2p import mapc2p
+from mapc2p import make_mapc2p
 
 import numpy
-from pylab import find
 
 try:
     fname = '_output/fort.hmax'
     d = numpy.loadtxt(fname)
     etamax = numpy.where(d[:,1]>1e-6, d[:,2], numpy.nan)
     xmax = d[:,0]
-    jmax = find(d[:,1]>0).max()
-    print "run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2])
-    print 'Loaded hmax from ',fname
+    jmax = where(d[:,1]>0)[0].max()
+    print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2]))
+    print('Loaded hmax from ',fname)
 except:
     xmax = None
-    print "Failed to load fort.hmax"
+    print("Failed to load fort.hmax")
 
 xmax = None # to suppress plotting max elevation as red curve 
 
@@ -39,17 +40,24 @@ def setplot(plotdata):
 
     plotdata.clearfigures()
 
+    outdir1 = plotdata.outdir
+    mapc2p1, ngrid1 = make_mapc2p(outdir1)
+
+
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid,tight_layout
-        ticklabel_format(format='plain',useOffset=False)
+        ticklabel_format(useOffset=False)
         grid(True)
         tight_layout()
 
     def fixticks(current_data):
-        from pylab import ticklabel_format, plot,grid
-        ticklabel_format(format='plain',useOffset=False)
+        from pylab import ticklabel_format, plot,grid,gca
+        ticklabel_format(useOffset=False)
         if xmax is not None:
             plot(xmax, etamax, 'r')
+        xlimits = gca().get_xlim()
+        print('+++ xlimits = ',xlimits)
+        import pdb; pdb.set_trace()
         grid(True)
 
     plotfigure = plotdata.new_plotfigure(name='domain', figno=0)
@@ -58,32 +66,34 @@ def setplot(plotdata):
     plotaxes.axescmd = 'subplot(211)'
     plotaxes.xlimits = xlimits
     #plotaxes.xlimits = [-100e3,-20e3]
-    plotaxes.ylimits = [-0.5,0.5]
+    #plotaxes.ylimits = [-0.5,0.5]
     plotaxes.title = 'Surface displacement'
     plotaxes.afteraxes = fixticks
+    plotaxes.skip_patches_outside_xylimits = False
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.surface
     plotitem.color = 'b'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.show = False
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(212)'
-    plotaxes.xlimits = xlimits
+    #plotaxes.xlimits = xlimits
     #plotaxes.ylimits = [-1000, 1000]
     plotaxes.title = 'Full depth'
     #plotaxes.title = 'momentum'
     plotaxes.afteraxes = fixticks1
+    plotaxes.skip_patches_outside_xylimits = False
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
     #plotitem.show = False
@@ -91,20 +101,20 @@ def setplot(plotdata):
     plotitem.plot_var2 = geoplot.topo
     plotitem.color = 'b'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.show = False
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 1
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     #----------
 
@@ -120,6 +130,7 @@ def setplot(plotdata):
     plotaxes.title = 'Zoom on shelf'
 
     plotaxes.afteraxes = fixticks
+    plotaxes.skip_patches_outside_xylimits = False
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.surface
@@ -128,13 +139,13 @@ def setplot(plotdata):
     #plotitem.plot_var2 = geoplot.topo
     plotitem.color = 'b'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(212)'
     #plotaxes.xlimits = [-2000,2000]
@@ -144,6 +155,7 @@ def setplot(plotdata):
     plotaxes.title = 'Zoom around shore'
 
     plotaxes.afteraxes = fixticks
+    plotaxes.skip_patches_outside_xylimits = False
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.show = False
@@ -154,13 +166,13 @@ def setplot(plotdata):
     plotitem.plot_var2 = geoplot.topo
     plotitem.color = 'b'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
 
     plotdata.printfigs = True          # Whether to output figures

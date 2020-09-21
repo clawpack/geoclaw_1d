@@ -1,5 +1,5 @@
 """
-Module to set up run time parameters for Clawpack -- classic code.
+Module to set up run time parameters for geoclaw 1d_nonuniform code
 
 The values set in the function setrun are then written out to data files
 that will be read in by the Fortran code.
@@ -8,28 +8,34 @@ that will be read in by the Fortran code.
 
 import os, sys
 import numpy as np
+from mapc2p import make_mapc2p
 
-# requires symbolic link from $CLAW/clawpack/geoclaw_1d to
-#    $CLAW/clawpack/geoclaw_1d/src/python/geoclaw_1d:
 
-#import clawpack.geoclaw.shallow_1d.data as geoclaw1d
-from clawpack.geoclaw_1d.data import GeoClawData1D,GaugeData1D
+# Read in nonuniform computational grid, which should have
+# been created using makegrid.py:
 
-dispersion = False            # Include Boussinesq terms?
-B_param =  1.0 / 15.0         # Parameter for the Boussinesq eqns
-sw_depth0 = 20.              # Use pure SWE if depth less than sw_depth0
-sw_depth1 = 80.              # Use pure Bous if depth greater than sw_depth1
-radial = False               # Include radial source terms?
+rundir = os.getcwd()
+mapc2p, ngrid = make_mapc2p(rundir)
+grid_data_file = os.path.join(rundir, 'grid.data')
+print('Found %i grid edges in %s' % (ngrid, grid_data_file))
+mx = ngrid - 1
+        
+#dxc = 1./mx
+#xc = np.linspace(dxc/2., 1-dxc/2., mx)   # computational cell centers
+xc = np.linspace(0,1,ngrid) # computational cell edges
+xp = mapc2p(xc)  # corresponding physical cell edges
+print('Setting mx = %i, cell edges from %g to %g' % (mx,xp[0],xp[-1]))
+
 
 #------------------------------
-def setrun(claw_pkg='classic'):
+def setrun(claw_pkg='geoclaw'):
 #------------------------------
 
     """
     Define the parameters used for running Clawpack.
 
     INPUT:
-        claw_pkg expected to be "classic" for this setrun.
+        claw_pkg expected to be "geoclaw" for this setrun.
 
     OUTPUT:
         rundata - object of class ClawRunData
@@ -39,7 +45,7 @@ def setrun(claw_pkg='classic'):
     from clawpack.clawutil import data
 
 
-    assert claw_pkg.lower() == 'classic',  "Expected claw_pkg = 'classic'"
+    assert claw_pkg.lower() == 'geoclaw',  "Expected claw_pkg = 'geoclaw'"
 
     num_dim = 1
     rundata = data.ClawRunData(claw_pkg, num_dim)
@@ -49,19 +55,6 @@ def setrun(claw_pkg='classic'):
     #------------------------------------------------------------------
     # Sample setup to write one line to setprob.data ...
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    #RC = 1.5e3
-    #RD = np.sqrt(2.)*RC  # with lip
-    ##RD = RC              # no lip
-    #DC = 2.*RC/3.
-    #probdata.add_param('RC',    RC, 'inner radius of crater')
-    #probdata.add_param('RD',    RD, 'outer radius of crater')
-    #probdata.add_param('DC',    DC, 'depth of crater')
-    probdata.add_param('bouss'             , dispersion  ,'Include dispersive terms?')
-    probdata.add_param('B_param'           , B_param     ,'Parameter for the Boussinesq eq')
-    probdata.add_param('sw_depth0', sw_depth0)
-    probdata.add_param('sw_depth1', sw_depth1)
-    probdata.add_param('radial', radial, 'Radial source term?')
-
 
 
     #------------------------------------------------------------------
@@ -79,6 +72,9 @@ def setrun(claw_pkg='classic'):
     clawdata.num_dim = num_dim
 
     # Lower and upper edge of computational domain:
+    # For nonuniform grid, 0 <= xc <= 1 and the file grid.data should
+    # define the mapping to the physical domain
+
     clawdata.lower[0] = 0.          # xlower
     clawdata.upper[0] = 1.           # xupper
 
@@ -235,16 +231,13 @@ def setrun(claw_pkg='classic'):
     #clawdata.bc_lower[0] = 'wall'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-    rundata = setgeo(rundata)
+    # Specify type of each aux variable in amrdata.auxtype.
+    # This must be a list of length maux, each element of which is one of:
+    #   'center',  'capacity', 'xleft'  (see documentation).
+    # Isn't used for this non-amr version, but still expected in data.
 
-    return rundata
-
-#-------------------
-def setgeo(rundata):
-#-------------------
-
-
-    rundata.add_data(GeoClawData1D(),'geo_data')
+    amrdata = rundata.amrdata
+    amrdata.aux_type = ['center','capacity']
 
     geo_data = rundata.geo_data
 
@@ -252,24 +245,40 @@ def setgeo(rundata):
 
     # Friction source terms:
     #   src_split > 0 required
-    #   friction_forcing == 1 or 'manning' ==> Mannings formula using friction_coefficient for n
-    #   friction_forcing == 2 or 'coulomb'  ==> Coulomb friction (not rate dependent).
-    #                            if Coulomb friction_coefficient is a friction angle 0<~30.0
-    geo_data.friction_forcing = 'manning'
-    geo_data.friction_coefficient = 0.025
+    #   currently only Manning friction with a single n=friction_coefficient
+    #   is supported in 1d.
+
+    geo_data.friction_forcing = True
+    geo_data.manning_coefficient =.025
 
 
-    rundata.add_data(GaugeData1D(),'gaugedata')
-    gaugedata = rundata.gaugedata
-    #for gauges append [gauge id, x, y=0.0, t0, tF]
-    # y = 0.0 is included so that plotting/reading tools for time series in 2d can be used.
-    #gaugedata.gauges.append([1,0.5,0.0,0.0,1e10])
+
+    # ---------------
+    # Gauges:
+    # ---------------
+    rundata.gaugedata.gauges = []
+    # for gauges append lines of the form  [gaugeno, x, t1, t2]
+
+    # for gauges append [gauge id, xc, t1, t2])
+    # note that xc is the computational grid point, 0 <= xc <= 1,
+    # so if you want to specify physical points xp, these need to be mapped
+    # to corresponding xc as follows:
+
+    if 1:
+        xp_gauges = [-100e3, -20e3]   # km
+        for k,xp_g in enumerate(xp_gauges):
+            gaugeno = k+1  
+            # compute computational point xc_g that maps to xp_g:
+            ii = np.where(xp < xp_g)[0][-1]
+            xp_frac = (xp_g - xp[ii])/(xp[ii+1] - xp[ii])
+            xc_g = (ii + xp_frac)/float(mx)
+            print('gaugeno = %i: physical location xp_g = %g maps to xc_g = %.12f' \
+                  % (gaugeno,xp_g, xc_g))
+            rundata.gaugedata.gauges.append([gaugeno, xc_g, 0, 1e9])
+
+
 
     return rundata
-    # end of function setgeo
-    # ----------------------
-    # end of function setrun
-    # ----------------------
 
 
 if __name__ == '__main__':

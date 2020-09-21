@@ -16,9 +16,6 @@ x0_slope = 50e3      # start of continental slope
 x0_shelf = 100e3     # start of continental shelf
 
 z0_ocean = -4500.     # depth of ocean = depth at x0_slope
-#z0_shelf = -4500.      # depth at x0_shelf
-#z0_beach = -4500.       # depth at x0_beach
-#z0_shore = -4500.      # depth at x0_shore
 z0_shelf = -1500.      # depth at x0_shelf
 z0_beach = -1500.       # depth at x0_beach
 z0_shore = -1500.      # depth at x0_shore
@@ -77,10 +74,14 @@ z = shelf1(xp)
 #z = 0.5*(shelf1(xp[1:]) + shelf1(xp[:-1]))
 fname = 'grid.data'
 f = open(fname,'w')
+f.write('F    radial \n')
+f.write('F    uniform_grid \n')
 f.write('%10i \n' % mx)
+
 for i in range(mx+1):
     f.write('%15.4f %15.4f\n' % (xp[i],z[i]))
 f.close()
+
 print("Created %s, containing cell edges" % fname)
 
 if 1:
@@ -94,6 +95,3 @@ if 1:
     savefig(fname)
     print("Created ",fname)
 
-# make Okada data on this grid:
-print("Running make_qinit_okada.py")
-execfile('make_qinit_okada.py')
