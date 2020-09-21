@@ -74,10 +74,14 @@ z = shelf1(xp)
 #z = 0.5*(shelf1(xp[1:]) + shelf1(xp[:-1]))
 fname = 'grid.data'
 f = open(fname,'w')
+f.write('F    radial \n')
+f.write('F    uniform_grid \n')
 f.write('%10i \n' % mx)
+
 for i in range(mx+1):
     f.write('%15.4f %15.4f\n' % (xp[i],z[i]))
 f.close()
+
 print("Created %s, containing cell edges" % fname)
 
 if 1:

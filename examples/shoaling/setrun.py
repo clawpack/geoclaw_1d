@@ -1,30 +1,31 @@
 """
-Module to set up run time parameters for Clawpack -- classic code.
+Module to set up run time parameters for geoclaw 1d_nonuniform code
 
 The values set in the function setrun are then written out to data files
 that will be read in by the Fortran code.
 
 """
 
-from __future__ import print_function
-
 import os, sys
 import numpy as np
-from mapc2p import mapc2p
+from mapc2p import make_mapc2p
 
-dispersion = True            # Include Boussinesq terms?
-B_param =  1.0 / 15.0         # Parameter for the Boussinesq eqns
-sw_depth0 = 20.              # Use pure SWE if depth less than sw_depth0
-sw_depth1 = 20.              # Use pure Bous if depth greater than sw_depth1
-radial = True               # Include radial source terms?
 
-grid = np.loadtxt('grid.data', skiprows=1)
-print('Read grid from grid.data, %i grid values' % grid.shape[0])
-mx = grid.shape[0] - 1
+# Read in nonuniform computational grid, which should have
+# been created using makegrid.py:
 
-dxc = 1./mx
-xc = np.linspace(dxc/2., 1-dxc/2., mx)
-xp = mapc2p(xc)
+rundir = os.getcwd()
+mapc2p, ngrid = make_mapc2p(rundir)
+grid_data_file = os.path.join(rundir, 'grid.data')
+print('Found %i grid edges in %s' % (ngrid, grid_data_file))
+mx = ngrid - 1
+        
+#dxc = 1./mx
+#xc = np.linspace(dxc/2., 1-dxc/2., mx)   # computational cell centers
+xc = np.linspace(0,1,ngrid) # computational cell edges
+xp = mapc2p(xc)  # corresponding physical cell edges
+print('Setting mx = %i, cell edges from %g to %g' % (mx,xp[0],xp[-1]))
+
 
 #------------------------------
 def setrun(claw_pkg='geoclaw'):
@@ -43,6 +44,7 @@ def setrun(claw_pkg='geoclaw'):
 
     from clawpack.clawutil import data
 
+
     assert claw_pkg.lower() == 'geoclaw',  "Expected claw_pkg = 'geoclaw'"
 
     num_dim = 1
@@ -53,12 +55,6 @@ def setrun(claw_pkg='geoclaw'):
     #------------------------------------------------------------------
     # Sample setup to write one line to setprob.data ...
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('bouss'             , dispersion  ,'Include dispersive terms?')
-    probdata.add_param('B_param'           , B_param     ,'Parameter for the Boussinesq eq')
-    probdata.add_param('sw_depth0', sw_depth0)
-    probdata.add_param('sw_depth1', sw_depth1)
-    probdata.add_param('radial', radial, 'Radial source term?')
-
 
 
     #------------------------------------------------------------------
@@ -76,6 +72,9 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.num_dim = num_dim
 
     # Lower and upper edge of computational domain:
+    # For nonuniform grid, 0 <= xc <= 1 and the file grid.data should
+    # define the mapping to the physical domain
+
     clawdata.lower[0] = 0.          # xlower
     clawdata.upper[0] = 1.           # xupper
 
@@ -241,45 +240,46 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
     amrdata.aux_type = ['center','capacity']
 
+    geo_data = rundata.geo_data
+
+    geo_data.dry_tolerance = 1.e-3
+
+    # Friction source terms:
+    #   src_split > 0 required
+    #   currently only Manning friction with a single n=friction_coefficient
+    #   is supported in 1d.
+
+    geo_data.friction_forcing = True
+    geo_data.manning_coefficient =.025
+
+
 
     # ---------------
     # Gauges:
     # ---------------
     rundata.gaugedata.gauges = []
     # for gauges append lines of the form  [gaugeno, x, t1, t2]
-    xgauge = [-50e3, 0, 50e3, 100e3]
-    for gaugeno,xp_g in enumerate(xgauge):
-        # compute computational point xc_g that maps to xp_g:
-        ii = np.where(xp < xp_g)[0][-1]
-        xp_frac = (xp_g - xp[ii])/(xp[ii+1] - xp[ii])
-        xc_g = (ii + xp_frac)/float(grid.shape[0])
-        print('gaugeno = ',gaugeno)
-        print('  ii, xp_g, xp[ii], xp[ii+1], xp_frac, xc_g:\n ', \
-                 ii, xp_g, xp[ii], xp[ii+1], xp_frac, xc_g)
-        rundata.gaugedata.gauges.append([gaugeno, xc_g, 0, 1e9])
 
+    # for gauges append [gauge id, xc, t1, t2])
+    # note that xc is the computational grid point, 0 <= xc <= 1,
+    # so if you want to specify physical points xp, these need to be mapped
+    # to corresponding xc as follows:
 
-    # ---------------
-    # geo data
-    # ---------------
+    if 1:
+        xp_gauges = [-100e3, -20e3]   # km
+        for k,xp_g in enumerate(xp_gauges):
+            gaugeno = k+1  
+            # compute computational point xc_g that maps to xp_g:
+            ii = np.where(xp < xp_g)[0][-1]
+            xp_frac = (xp_g - xp[ii])/(xp[ii+1] - xp[ii])
+            xc_g = (ii + xp_frac)/float(mx)
+            print('gaugeno = %i: physical location xp_g = %g maps to xc_g = %.12f' \
+                  % (gaugeno,xp_g, xc_g))
+            rundata.gaugedata.gauges.append([gaugeno, xc_g, 0, 1e9])
 
-    geo_data = rundata.geo_data
-
-    geo_data.sea_level = 0.0
-    geo_data.dry_tolerance = 1.e-3
-
-    # Friction source terms:
-    #   src_split > 0 required
-
-    geo_data.friction_forcing = True
-    geo_data.manning_coefficient =.025
-    geo_data.friction_depth = 1e6
 
 
     return rundata
-
-    # end of function setrun
-    # ----------------------
 
 
 if __name__ == '__main__':
