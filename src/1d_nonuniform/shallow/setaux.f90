@@ -11,7 +11,8 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
 
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
     !use geoclaw_module, only: grav  !uncomment if needed
-    use grid_module, only: xgrid,zgrid,mx_grid
+    use geoclaw_module, only: earth_radius, coordinate_system, DEG2RAD
+    use grid_module, only: xp_edge,z_edge,mx_edge
 
     implicit none
     integer, intent(in) :: mbc,mx,maux
@@ -22,18 +23,22 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     integer :: i,i0,i1,j
     real(kind=8) :: xcell,zcell,a
 
-    if (mx .ne. mx_grid) then
-        write(6,*) 'mx_grid from grid.data must agree with mx'
-        write(6,*) 'mx_grid = ',mx_grid
+    if (mx+1 .ne. mx_edge) then
+        write(6,*) 'mx_edge from grid.data must agree with mx+1'
+        write(6,*) 'mx_edge = ',mx_edge
         write(6,*) 'mx = ',mx
         stop
         endif
 
     do i=1,mx
-        aux(1,i) = 0.5d0*(zgrid(i) + zgrid(i+1))
-        aux(2,i) = (xgrid(i+1) - xgrid(i))/dx
+        aux(1,i) = 0.5d0*(z_edge(i) + z_edge(i+1))
+        aux(2,i) = (xp_edge(i+1) - xp_edge(i))/dx
+        if (coordinate_system == 2) then
+            ! convert degrees to meters:
+            aux(2,i) = aux(2,i)* DEG2RAD * earth_radius
+        endif
         if (aux(2,i) <= 0.d0) then
-            write(6,*) '+++ i,xgrid(i),xgrid(i+1): ',i,xgrid(i),xgrid(i+1)
+            write(6,*) '+++ i,xp_edge(i),xp_edge(i+1): ',i,xp_edge(i),xp_edge(i+1)
             endif
     enddo
 

@@ -14,7 +14,7 @@ c
 
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
-      use grid_module, only: set_grid
+      use grid_module, only: set_grid, xlower, xupper, mx, mbc
 
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
