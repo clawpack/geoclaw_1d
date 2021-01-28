@@ -55,12 +55,18 @@ def setplot(plotdata):
         if xmax is not None:
             plot(xmax, etamax, 'r')
         grid(True)
+        
+    def velocity(current_data):
+        from pylab import where
+        q = current_data.q
+        u = where(q[0,:]>1e-3, q[1,:] / q[0,:], 0.)
+        return u
 
     plotfigure = plotdata.new_plotfigure(name='domain', figno=0)
+    plotfigure.kwargs = {'figsize':(8,7)}
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(211)'
+    plotaxes.axescmd = 'subplot(311)'
     plotaxes.xlimits = xlimits
-    #plotaxes.xlimits = [-100e3,-20e3]
     plotaxes.ylimits = [-1,4]
     plotaxes.title = 'Surface displacement'
     plotaxes.afteraxes = fixticks
@@ -80,19 +86,33 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(212)'
+    plotaxes.axescmd = 'subplot(312)'
     plotaxes.xlimits = xlimits
-    #plotaxes.xlimits = [-100e3,-20e3]
-    #plotaxes.ylimits = [-1000, 1000]
-    #plotaxes.title = 'Full depth'
-    plotaxes.title = 'momentum'
+    plotaxes.ylimits = [-0.3,0.3]
+    plotaxes.title = 'Velocity'
     plotaxes.afteraxes = fixticks1
     plotaxes.skip_patches_outside_xylimits = False
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = velocity
+    plotitem.color = 'b'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(313)'
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = [-5000,500]
+    plotaxes.title = 'Full depth'
+    plotaxes.afteraxes = fixticks1
+    plotaxes.skip_patches_outside_xylimits = False
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+    
     plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
-    plotitem.show = False
+    #plotitem.show = False
     plotitem.plot_var = geoplot.surface
     plotitem.plot_var2 = geoplot.topo
     plotitem.color = 'b'
@@ -100,17 +120,12 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
+    #plotitem.show = False
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 1
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
 
     #----------
 

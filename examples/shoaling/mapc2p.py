@@ -13,12 +13,12 @@ def make_mapc2p(outdir):
 
     grid_data_file = os.path.join(outdir, 'grid.data')
     d = np.loadtxt(grid_data_file, skiprows=3) 
-    ngrid = d.shape[0]
+    mx_grid_edges = d.shape[0]
 
-    print('mapc2p: Read %i grid values from %s' % (d.shape[0], grid_data_file))
+    print('mapc2p: Read %i grid edge values from %s' % (d.shape[0], grid_data_file))
 
-    xc_edges = np.linspace(0,1,ngrid)
-    xp_edges = d[:,0]
+    xc_edges = np.linspace(0,1,mx_grid_edges)
+    xp_edges = d[:,1]
     mapc2p_fcn = interp1d(xc_edges, xp_edges, kind='linear')
 
-    return mapc2p_fcn, ngrid
+    return mapc2p_fcn, mx_grid_edges

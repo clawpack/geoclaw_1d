@@ -15,14 +15,14 @@ from mapc2p import make_mapc2p
 # been created using makegrid.py:
 
 rundir = os.getcwd()
-mapc2p, ngrid = make_mapc2p(rundir)
+mapc2p, mx_grid_edges = make_mapc2p(rundir)
 grid_data_file = os.path.join(rundir, 'grid.data')
-print('Found %i grid edges in %s' % (ngrid, grid_data_file))
-mx = ngrid - 1
+print('Found %i grid edges in %s' % (mx_grid_edges, grid_data_file))
+mx = mx_grid_edges - 1
         
 #dxc = 1./mx
 #xc = np.linspace(dxc/2., 1-dxc/2., mx)   # computational cell centers
-xc = np.linspace(0,1,ngrid) # computational cell edges
+xc = np.linspace(0,1,mx_grid_edges) # computational cell edges
 xp = mapc2p(xc)  # corresponding physical cell edges
 print('Setting mx = %i, cell edges from %g to %g' % (mx,xp[0],xp[-1]))
 
@@ -229,7 +229,7 @@ def setrun(claw_pkg='geoclaw'):
 
     #clawdata.bc_lower[0] = 'extrap'   # at xlower
     clawdata.bc_lower[0] = 'wall'   # at xlower
-    clawdata.bc_upper[0] = 'extrap'   # at xupper
+    clawdata.bc_upper[0] = 'wall'   # at xupper
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -252,6 +252,7 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.friction_forcing = True
     geo_data.manning_coefficient =.025
 
+    geo_data.coordinate_system = 1  # linear distance (meters)
 
 
     # ---------------

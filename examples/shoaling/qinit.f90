@@ -9,7 +9,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
     !use geoclaw_module, only: grav  !uncomment if needed
-    use grid_module, only: xgrid,zgrid,mx_grid
+    use grid_module, only: xp_edge,z_edge,mx_edge
 
     implicit none
 
@@ -28,7 +28,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
     x0 = 0.d3   ! initial location of Gaussian
 
     do i=1,mx
-      xcell = 0.5*(xgrid(i) + xgrid(i+1))
+      xcell = 0.5*(xp_edge(i) + xp_edge(i+1))
       r = xcell  ! in meters, based on xlower=0
       eta = 2.d0 * exp(-((r-x0)/width)**2)
       q(1,i) = max(0.0, eta - aux(1,i))
