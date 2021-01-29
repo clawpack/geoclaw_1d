@@ -1,25 +1,15 @@
 
 
 import os, sys
-from imp import reload
-
 
 try:
     from clawpack.geoclaw_1d import geoplot
 except:
     print('Could not import from geoclaw_1d')
 
-#import clawpack.geoclaw.shallow_1d.plot as geoplot
 
-import setrun
-rundata=setrun.setrun()
-
-import mapc2p
-reload(mapc2p)  # in case num_cells changed
-from mapc2p import make_mapc2p
-
+from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 import numpy
-#from pylab import find
 
 try:
     fname = '_output/fort.hmax'
@@ -40,8 +30,7 @@ def setplot(plotdata):
     plotdata.clearfigures()
 
     outdir1 = plotdata.outdir
-    mapc2p1, ngrid1 = make_mapc2p(outdir1)
-
+    mapc2p1, mx_edge, xp_edge = make_mapc2p('celledges.txt')
 
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid,tight_layout

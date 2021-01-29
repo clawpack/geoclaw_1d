@@ -8,23 +8,19 @@ that will be read in by the Fortran code.
 
 import os, sys
 import numpy as np
-from mapc2p import make_mapc2p
+from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 
 
-# Read in nonuniform computational grid, which should have
-# been created using makegrid.py:
+# Read in nonuniform computational cell edges, which should have
+# been created using make_celledges.py:
 
-rundir = os.getcwd()
-mapc2p, mx_grid_edges = make_mapc2p(rundir)
-grid_data_file = os.path.join(rundir, 'grid.data')
-print('Found %i grid edges in %s' % (mx_grid_edges, grid_data_file))
-mx = mx_grid_edges - 1
+grid_type = 2
+fname_celledges = 'celledges.txt'
+    
+mapc2p, mx_edge, xp_edge = make_mapc2p(fname_celledges)
+mx = mx_edge - 1
         
-#dxc = 1./mx
-#xc = np.linspace(dxc/2., 1-dxc/2., mx)   # computational cell centers
-xc = np.linspace(0,1,mx_grid_edges) # computational cell edges
-xp = mapc2p(xc)  # corresponding physical cell edges
-print('Setting mx = %i, cell edges from %g to %g' % (mx,xp[0],xp[-1]))
+print('Setting mx = %i, cell edges from %g to %g' % (mx,xp_edge[0],xp_edge[-1]))
 
 
 #------------------------------
@@ -80,6 +76,11 @@ def setrun(claw_pkg='geoclaw'):
 
     # Number of grid cells:
     clawdata.num_cells[0] = mx
+    
+    from clawpack.geoclaw_1d.data import GridData1D
+    rundata.add_data(GridData1D(),'grid_data')
+    rundata.grid_data.grid_type = grid_type  # should be set to 2 above
+    rundata.grid_data.fname_celledges = fname_celledges
 
 
     # ---------------
@@ -271,8 +272,8 @@ def setrun(claw_pkg='geoclaw'):
         for k,xp_g in enumerate(xp_gauges):
             gaugeno = k+1  
             # compute computational point xc_g that maps to xp_g:
-            ii = np.where(xp < xp_g)[0][-1]
-            xp_frac = (xp_g - xp[ii])/(xp[ii+1] - xp[ii])
+            ii = np.where(xp_edge < xp_g)[0][-1]
+            xp_frac = (xp_g - xp_edge[ii])/(xp_edge[ii+1] - xp_edge[ii])
             xc_g = (ii + xp_frac)/float(mx)
             print('gaugeno = %i: physical location xp_g = %g maps to xc_g = %.12f' \
                   % (gaugeno,xp_g, xc_g))

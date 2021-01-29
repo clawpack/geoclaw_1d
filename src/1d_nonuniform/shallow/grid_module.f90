@@ -3,7 +3,7 @@ module grid_module
     implicit none
     save
 
-    integer :: mx, mbc
+    integer :: mx, mbc, grid_type
     real(kind=8) :: xlower, xupper
     logical :: mapped_grid
 
@@ -28,17 +28,27 @@ subroutine set_grid(mx,dx)
     real(kind=8), intent(in) :: dx
 
     character(len=9) :: fname_grid
+    character(len=150) :: fname_celledges
     integer :: i,j,mb
     real(kind=8) :: rim,rip,ric,c0i,cmi,cpi,r
 
     fname_grid = 'grid.data'
-    open(unit=58, file=fname_grid, status='old',form='formatted')
-    read(58,*) mapped_grid
+    call opendatafile(58,fname_grid)
+    !read(58,*) mapped_grid
+    read(58,*) grid_type
+        ! grid_type == 0: uniform grid
+        ! grid_type == 1: mapc2p.f90 used for mapping
+        ! grid_type == 2: celledges.txt file gives edges
+    close(unit=58)
 
-    write(6,*) '+++ mapped_grid = ',mapped_grid
+    write(6,*) '+++ grid_type = ',grid_type
 
-    if (mapped_grid) then
+    if (grid_type == 2) then
     
+        fname_celledges = 'celledges.txt'
+        write(6,*) 'Reading cell edges from ',trim(fname_celledges)
+        open(unit=58, file=fname_celledges, status='old',form='formatted')
+
         !read(58,*) radial  ! OLD, now using coordinate_system == -1
         !read(58,*) uniform_grid   ! OLD
     
