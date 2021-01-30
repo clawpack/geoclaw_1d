@@ -35,7 +35,6 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     call topo_integrate(mx,mbc,maux,aux)
 
     do i=1,mx
-        !aux(1,i) = 0.5d0*(z_edge(i) + z_edge(i+1))
         aux(2,i) = (xp_edge(i+1) - xp_edge(i))/dx
         if (coordinate_system == 2) then
             ! convert degrees to meters:

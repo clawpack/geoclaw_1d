@@ -40,7 +40,11 @@ subroutine set_grid(mx,dx)
         ! grid_type == 0: uniform grid
         ! grid_type == 1: mapc2p.f90 used for mapping
         ! grid_type == 2: celledges.txt file gives edges
-    read(iunit,*) fname_celledges
+
+    if (grid_type == 2) then
+        read(iunit,*) fname_celledges
+    endif
+
     close(unit=iunit)
 
 
@@ -68,13 +72,12 @@ subroutine set_grid(mx,dx)
 
     else if (grid_type == 2) then
     
-        !fname_celledges = 'celledges.txt'
         write(6,*) 'Reading cell edges from ',trim(fname_celledges)
 
-        open(unit=58, file=trim(fname_celledges), status='old', &
+        open(unit=iunit, file=trim(fname_celledges), status='old', &
              form='formatted')
 
-        read(58,*) mx_edge
+        read(iunit,*) mx_edge
 
         if (mx_edge /= mx+1) then
             write(6,*) '*** expect mx_edge in grid.txt to equal mx+1'
@@ -92,11 +95,11 @@ subroutine set_grid(mx,dx)
         write(6,*) 'Reading grid with mx = ',mx
         ! read in xc values and corresponding xp and z values
         do i=1,mx_edge
-            read(58,*) xp_edge(i),z_edge(i)
+            read(iunit,*) xp_edge(i),z_edge(i)
         enddo
     endif
 
-    close(unit=58)
+    close(unit=iunit)
 
     if ((coordinate_system == -1) .and. (xp_edge(1) < 0.d0)) then
         write(6,*) 'coordinate_system == -1, radial requires x >= 0'

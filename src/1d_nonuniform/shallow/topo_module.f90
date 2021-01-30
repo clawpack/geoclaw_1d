@@ -59,14 +59,17 @@ contains
     implicit none
 
     character(len=150), intent(in) :: fname
-    integer :: i, iunit
+    integer :: i
+    integer, parameter :: iunit = 7
 
-    iunit = 38
     open(unit=iunit, file=trim(fname), status='unknown',form='formatted')
-    
+
     read(iunit,*) mx_topo
     allocate(xtopo(mx_topo), ztopo(mx_topo))
 
+    write(6,"('Reading ',i6,' topo values from ')") mx_topo
+    write(6,*) '    ',trim(fname)
+    
     do i=1,mx_topo
         read(iunit,*) xtopo(i), ztopo(i)
     enddo
