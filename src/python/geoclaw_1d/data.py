@@ -184,7 +184,7 @@ class GridData1D(clawpack.clawutil.data.ClawData):
             # same directory that out_file comes from
             fname = os.path.abspath(os.path.join(os.path.dirname(out_file),
                                     self.fname_celledges))
-            self._out_file.write("\n%s   =: fname_celledges\n " % fname)
+            self._out_file.write("\n'%s'   =: fname_celledges\n " % fname)
             #self.data_write('fname_celledges')
         self.close_data_file()
 

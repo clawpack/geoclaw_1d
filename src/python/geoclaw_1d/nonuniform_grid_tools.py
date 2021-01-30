@@ -1,6 +1,5 @@
 from pylab import *
 from scipy.interpolate import interp1d
-from interp import pwcubic, pwlinear
 import numpy as np
 import os
 from scipy.interpolate import interp1d
@@ -23,8 +22,8 @@ def make_mapc2p(fname_celledges='celledges.txt'):
 
     print('make_mapc2p: Using %i cell edge values from %s' % (d.shape[0], path))
 
-    xc_edge = np.linspace(0,1,mx_edge)
-    xp_edge = d[:,1]
+    xc_edge = np.linspace(0,1,mx_edge)  # assumes xlower=0, xupper=1 in setrun
+    xp_edge = d[:,0]
     mapc2p = interp1d(xc_edge, xp_edge, kind='linear')
 
     return mapc2p, mx_edge, xp_edge
@@ -67,7 +66,7 @@ def make_celledges_cfl(xlower, xupper, mx, topo_fcn, hmin,
         f.write('%i   # number of cell edges\n' % (mx+1))
 
         for i in range(mx+1):
-            f.write('%15.4f %15.4f %15.4f\n' % (xc[i],xp[i],z[i]))
+            f.write('%15.4f %15.4f\n' % (xp[i],z[i]))
         f.close()
 
     print("Created %s, containing cell edges" % fname)

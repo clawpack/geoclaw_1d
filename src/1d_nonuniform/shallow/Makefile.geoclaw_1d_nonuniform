@@ -7,6 +7,7 @@ COMMON_MODULES += \
   $(GEOLIB)/geoclaw_module.f90 \
   $(GEOLIB)/gauges_module.f90 \
   $(GEOLIB)/grid_module.f90 \
+  $(GEOLIB)/topo_module.f90 \
 
 COMMON_SOURCES += \
   $(GEOLIB)/claw1ez.f \

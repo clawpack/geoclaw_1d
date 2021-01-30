@@ -25,12 +25,14 @@ except:
 
 xlimits = [-150e3,150e3]
 
+fname_celledges = os.path.abspath('celledges.txt')
+
 def setplot(plotdata):
 
     plotdata.clearfigures()
 
     outdir1 = plotdata.outdir
-    mapc2p1, mx_edge, xp_edge = make_mapc2p('celledges.txt')
+    mapc2p1, mx_edge, xp_edge = make_mapc2p(fname_celledges)
 
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid,tight_layout

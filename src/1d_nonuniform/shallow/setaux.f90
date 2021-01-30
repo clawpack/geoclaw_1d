@@ -13,11 +13,12 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     !use geoclaw_module, only: grav  !uncomment if needed
     use geoclaw_module, only: earth_radius, coordinate_system, DEG2RAD
     use grid_module, only: xp_edge,z_edge,mx_edge
+    use topo_module, only: topo_integrate
 
     implicit none
     integer, intent(in) :: mbc,mx,maux
     real(kind=8), intent(in) :: xlower,dx
-    real(kind=8), intent(out) ::  aux(maux,1-mbc:mx+mbc)
+    real(kind=8), intent(inout) ::  aux(maux,1-mbc:mx+mbc)
 
     !locals
     integer :: i,i0,i1,j
@@ -30,8 +31,11 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
         stop
         endif
 
+    ! compute topo values and store in aux(1,:):
+    call topo_integrate(mx,mbc,maux,aux)
+
     do i=1,mx
-        aux(1,i) = 0.5d0*(z_edge(i) + z_edge(i+1))
+        !aux(1,i) = 0.5d0*(z_edge(i) + z_edge(i+1))
         aux(2,i) = (xp_edge(i+1) - xp_edge(i))/dx
         if (coordinate_system == 2) then
             ! convert degrees to meters:

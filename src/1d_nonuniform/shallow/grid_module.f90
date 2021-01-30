@@ -28,30 +28,52 @@ subroutine set_grid(mx,dx)
     real(kind=8), intent(in) :: dx
 
     character(len=9) :: fname_grid
-    character(len=150) :: fname_celledges
+    character(len=90) :: fname_celledges
+    integer, parameter :: iunit = 7
     integer :: i,j,mb
     real(kind=8) :: rim,rip,ric,c0i,cmi,cpi,r
 
     fname_grid = 'grid.data'
-    call opendatafile(58,fname_grid)
-    !read(58,*) mapped_grid
-    read(58,*) grid_type
+    call opendatafile(iunit,fname_grid)
+    
+    read(iunit,*) grid_type
         ! grid_type == 0: uniform grid
         ! grid_type == 1: mapc2p.f90 used for mapping
         ! grid_type == 2: celledges.txt file gives edges
-    close(unit=58)
+    read(iunit,*) fname_celledges
+    close(unit=iunit)
 
-    write(6,*) '+++ grid_type = ',grid_type
 
-    if (grid_type == 2) then
+    if (grid_type == 0) then
+        ! uniform grid with mx cells and mx+1 edges:
+        if (dx /= (xupper - xlower) / mx) then
+            write(6,*) '*** dx has unexpected value'
+            stop
+        endif
+
+        mx_edge = mx+1
+        allocate(xp_edge(1-mbc:mx_edge+mbc))
+        allocate(z_edge(1-mbc:mx_edge+mbc))
+        allocate(xcell(1-mbc:mx+mbc))
+        allocate(zcell(1-mbc:mx+mbc))
+
+
+        do i=1,mx_edge
+            xp_edge(i) = xlower + (i-1)*dx
+            !z_edge(i) = -4000.d0   ! NEED TO FIX FOR GENERAL TOPO
+        enddo
+
+    else if (grid_type == 1) then
+        write(6,*) '*** grid_type == 1 not implemented yet'
+
+    else if (grid_type == 2) then
     
-        fname_celledges = 'celledges.txt'
+        !fname_celledges = 'celledges.txt'
         write(6,*) 'Reading cell edges from ',trim(fname_celledges)
-        open(unit=58, file=fname_celledges, status='old',form='formatted')
 
-        !read(58,*) radial  ! OLD, now using coordinate_system == -1
-        !read(58,*) uniform_grid   ! OLD
-    
+        open(unit=58, file=trim(fname_celledges), status='old', &
+             form='formatted')
+
         read(58,*) mx_edge
 
         if (mx_edge /= mx+1) then
@@ -70,21 +92,11 @@ subroutine set_grid(mx,dx)
         write(6,*) 'Reading grid with mx = ',mx
         ! read in xc values and corresponding xp and z values
         do i=1,mx_edge
-            read(58,*) xc_edge(i),xp_edge(i),z_edge(i)
-        enddo
-    else
-        ! uniform grid with mx cells and mx+1 edges:
-        if (dx /= (xupper - xlower) / mx) then
-            write(6,*) '*** dx has unexpected value'
-            stop
-        endif
-
-        mx_edge = mx+1
-        do i=1,mx_edge
-            xp_edge(i) = xlower + (i-1)*dx
-            z_edge(i) = -4000.d0   ! NEED TO FIX FOR GENERAL TOPO
+            read(58,*) xp_edge(i),z_edge(i)
         enddo
     endif
+
+    close(unit=58)
 
     if ((coordinate_system == -1) .and. (xp_edge(1) < 0.d0)) then
         write(6,*) 'coordinate_system == -1, radial requires x >= 0'

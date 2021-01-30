@@ -9,12 +9,13 @@ c     An easy-to-use clawpack driver routine for simple applications
 c     Documentation is available at
 c                 http://www.clawpack.org
 c
-c     ! Modified for Boussinesq version
+c     ! Modified for GeoClaw 1d shallow water
 c
 
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
+      use topo_module, only: read_topo_settings
 
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
@@ -183,6 +184,8 @@ c     # set gauges and geoclaw specific quantities:
       call set_gauges(.false., 2) ! no restart, nvar=2
       call set_geo()
       call set_grid(mx,dx)
+
+      call read_topo_settings()
 c
 c     # call user's routine setprob to set any specific parameters
 c     # or other initialization required.
