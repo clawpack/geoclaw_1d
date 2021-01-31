@@ -20,7 +20,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     !locals
     integer :: i
-    real(kind=8) :: r,x0
+    real(kind=8) :: x,x0
 
     real(kind=8) :: eta, width
 
@@ -28,16 +28,11 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
     x0 = 0.   ! initial location of Gaussian
 
     do i=1,mx
-      r = xcell(i)  ! latitude in degrees
-      !if (abs(r-70.d0) < 5.d0) then
-      if (abs(r-0.d0) < 10.d0) then
-          eta = 2.d0
-      else
-          eta = 0.d0
-      endif
+      x = xcell(i)  ! latitude in degrees
+      eta = 2.d0 * exp(-((x-x0)/width)**2)
+      if (eta < 1d-20) eta = 0.d0
       q(1,i) = max(0.0, eta - aux(1,i))
       q(2,i) = 0.d0 
-
    enddo
 
 

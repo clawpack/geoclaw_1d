@@ -63,7 +63,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.upper[0] = 90.           # xupper
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 3600
+    clawdata.num_cells[0] = 1800
 
     from clawpack.geoclaw_1d.data import GridData1D
     rundata.add_data(GridData1D(),'grid_data')
