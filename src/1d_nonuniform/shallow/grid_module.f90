@@ -15,7 +15,7 @@ module grid_module
     ! to keep track of max depth, speed over all time:
     real(kind=8), allocatable, dimension(:) ::  hmax, smax
 
-    real(kind=8) :: total_mass
+    integer, parameter :: iunit_total_zeta_mass = 69
 
 contains
 
@@ -129,6 +129,10 @@ subroutine set_grid(mx,dx)
     allocate(hmax(mx), smax(mx))
     hmax(:) = 0.d0
     smax(:) = 0.d0
+
+    ! to write total_zeta_mass every time step from b4step1:
+    open(unit=iunit_total_zeta_mass, file='total_zeta_mass.txt', &
+         status='unknown',form='formatted')
     
 end subroutine set_grid
 

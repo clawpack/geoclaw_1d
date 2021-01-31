@@ -15,6 +15,7 @@ c
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
+      use grid_module, only: iunit_total_zeta_mass
       use topo_module, only: read_topo_settings
 
       implicit double precision (a-h,o-z)
@@ -322,6 +323,7 @@ c
       if (allocated(iout_q))   deallocate(iout_q)
       if (allocated(iout_aux)) deallocate(iout_aux)
 
+      close(iunit_total_zeta_mass)
 c
       return 
       end

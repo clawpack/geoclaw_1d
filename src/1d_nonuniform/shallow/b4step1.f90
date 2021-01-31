@@ -7,7 +7,7 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
 
     use geoclaw_module, only: dry_tolerance
     use geoclaw_module, only: DEG2RAD, earth_radius, coordinate_system, pi
-    use grid_module, only: hmax, smax, xp_edge, total_mass
+    use grid_module, only: hmax, smax, xp_edge, iunit_total_zeta_mass
 
     implicit none
     integer, intent(in) :: mbc,mx,meqn,maux
@@ -17,9 +17,13 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
 
     !local variables
     integer :: i,ig,j,m,mvars
-    real(kind=8) :: speed, cell_mass, x, capa_latitude, zeta
+    real(kind=8) :: speed, x, capa_latitude, zeta
+    real(kind=8) :: total_zeta_mass, cell_zeta_mass
 
-    total_mass = 0.d0 
+    ! accumulate total mass in excess of initial sea level
+    ! zeta = eta = h+B offshore and zeta = h onshore.  Should be conserved.
+    total_zeta_mass = 0.d0 
+
     if (coordinate_system == 2) then
         capa_latitude = 2.d0*pi*earth_radius**2 ! to scale to surface area
     endif
@@ -40,31 +44,26 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
              hmax(i) = dmax1(hmax(i), q(1,i))
              smax(i) = dmax1(smax(i), speed)
 
-             ! total mass
-             !cell_mass = q(1,i) * (xp_edge(i+1) - xp_edge(i))
-
              ! total mass deviation based on zeta:
              if (aux(1,i) < 0.d0) then
                  zeta = q(1,i) + aux(1,i)  ! = eta = h+B
              else
                  zeta = q(1,i)             ! = h
              endif
-             cell_mass = zeta * (xp_edge(i+1) - xp_edge(i))
+
+             cell_zeta_mass = zeta * (xp_edge(i+1) - xp_edge(i))
 
              if (coordinate_system == 2) then
-                 !cell_mass = cell_mass * DEG2RAD * earth_radius
-                 !x = 0.5d0*(xp_edge(i) + xp_edge(i+1))
-                 !cell_mass = cell_mass * cos(x*DEG2RAD) * earth_radius
                  ! for total mass on full sphere:
-                 cell_mass = cell_mass * (sin(xp_edge(i+1)*DEG2RAD) - &
+                 cell_zeta_mass = cell_zeta_mass * (sin(xp_edge(i+1)*DEG2RAD) - &
                              sin(xp_edge(i)*DEG2RAD))/dx * capa_latitude
              endif
-             total_mass = total_mass + cell_mass
+             total_zeta_mass = total_zeta_mass + cell_zeta_mass
          endif
 
       enddo
 
-    write(76,*) t,total_mass
+    write(iunit_total_zeta_mass,*) t,total_zeta_mass
 
 end subroutine b4step1
 
