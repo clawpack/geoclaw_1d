@@ -1,5 +1,5 @@
 #get the directory of this makefile
-GEOLIB:=$(CLAW)/geoclaw_1d/src/1d_nonuniform/shallow
+GEOLIB:=$(CLAW)/geoclaw_1d/src/1d_classic/shallow
 
 #list of common sources:
 COMMON_MODULES += \
