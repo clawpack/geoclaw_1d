@@ -72,7 +72,7 @@ def setplot(plotdata):
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.show = False
     plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
+    plotitem.color = 'g'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
@@ -106,14 +106,20 @@ def setplot(plotdata):
     #plotitem.show = False
     plotitem.plot_var = geoplot.surface
     plotitem.plot_var2 = geoplot.topo
-    plotitem.color = 'b'
+    plotitem.color = [.5,.5,1]
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     #plotitem.show = False
     plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
+    plotitem.color = 'g'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = geoplot.surface
+    plotitem.color = 'b'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
