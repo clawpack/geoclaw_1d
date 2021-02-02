@@ -1,13 +1,14 @@
 #get the directory of this makefile
-GEOLIB:=$(CLAW)/geoclaw_1d/src/1d/1d_nonuniform/shallow
-BOUSSLIB:=$(CLAW)/geoclaw_1d/src/1d/1d_nonuniform/bouss
+GEOLIB:=$(CLAW)/geoclaw_1d/src/1d_classic/shallow
+BOUSSLIB:=$(CLAW)/geoclaw_1d/src/1d_classic/bouss
 
 #list of common sources:
 COMMON_MODULES += \
   $(GEOLIB)/utility_module.f90 \
   $(GEOLIB)/geoclaw_module.f90 \
   $(GEOLIB)/gauges_module.f90 \
-  $(BOUSSLIB)/grid_module.f90 \
+  $(GEOLIB)/grid_module.f90 \
+  $(GEOLIB)/topo_module.f90 \
   $(BOUSSLIB)/bouss_module.f90 \
 
 COMMON_SOURCES += \
@@ -19,9 +20,9 @@ COMMON_SOURCES += \
   $(GEOLIB)/out1.f \
   $(GEOLIB)/setprob.f90 \
   $(GEOLIB)/b4step1.f90 \
+  $(GEOLIB)/qinit.f90 \
   $(BOUSSLIB)/src1.f90 \
   $(CLAW)/classic/src/1d/driver.f90 \
-  $(CLAW)/classic/src/1d/qinit.f \
   $(CLAW)/classic/src/1d/inlinelimiter.f90 \
   $(CLAW)/classic/src/1d/step1.f90 \
   $(CLAW)/classic/src/1d/copyq1.f \

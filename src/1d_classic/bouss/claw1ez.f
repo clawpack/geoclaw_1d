@@ -12,11 +12,13 @@ c
 c     ! Modified for Boussinesq version
 c
 
+      use gauges_module, only: set_gauges
+      use geoclaw_module, only: set_geo
+      use grid_module, only: set_grid, xlower, xupper, mx, mbc
+      use grid_module, only: iunit_total_zeta_mass
+      use grid_module, only: hmax, smax, xcell
+      use topo_module, only: read_topo_settings
       use bouss_module, only: set_bouss
-      use grid_module, only: set_grid
-
-      use grid_module, only: xgrid
-      use grid_module, only: hmax, smax
 
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
@@ -63,7 +65,7 @@ c
       if (outstyle == 1) then
          read(55,*) nout
          read(55,*) tfinal
-         read(55,*) output_t0    ! Not currently used
+         read(55,*) output_t0
          nstepout = 1
       else if (outstyle == 2) then
          read(55,*) nout
@@ -180,16 +182,21 @@ c     # time increments between outputing solution:
          dtout = (tfinal - t0)/float(nout)
          endif
 c
-c
-c     # call user's routine setprob to set any specific parameters
-c     # or other initialization required.
-c
-      ! read in grid points from grid.data, compute cm,c0,cp stencil coeffs:
-      call set_grid(mx,dx)   
+
+c     # set gauges and geoclaw specific quantities:
+
+      call set_gauges(.false., 2) ! no restart, nvar=2
+      call set_geo()
+      call set_grid(mx,dx)
+      call read_topo_settings()
 
       ! read in Boussinesq solver parameters:
       call set_bouss(mx,mbc,mthbc)
 
+c
+c     # call user's routine setprob to set any specific parameters
+c     # or other initialization required.
+c
       call setprob
 
       ! Allocate aux
@@ -224,9 +231,11 @@ c     # set initial conditions:
 c
       call qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 c
-c        # output initial data
-      call out1(meqn,mbc,mx,xlower,dx,q,t0,0,aux,maux,
-     &          outaux_init_only .or. outaux_always)
+      if (output_t0) then
+c     # output initial data
+          call out1(meqn,mbc,mx,xlower,dx,q,t0,0,aux,maux,
+     &              outaux_init_only .or. outaux_always)
+      endif
 
       ! Allocate work array
       allocate(work(mwork), stat=allocate_status)
@@ -321,11 +330,12 @@ c
      &      form='formatted')
        rewind hmaxunit
        do i=1,mx
-          x = 0.5d0*(xgrid(i)+xgrid(i+1))
+          x = xcell(i)
           etamax = hmax(i) + aux(1,i)
           write(hmaxunit,451) x,hmax(i),etamax,smax(i)
  451      format(4f16.8)
           enddo
+      close(hmaxunit)
 
 
       if (allocated(q))        deallocate(q)
@@ -335,6 +345,9 @@ c
       if (allocated(tout))     deallocate(tout)
       if (allocated(iout_q))   deallocate(iout_q)
       if (allocated(iout_aux)) deallocate(iout_aux)
+
+      close(iunit_total_zeta_mass)
+
 
 c
       return 

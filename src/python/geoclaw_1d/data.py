@@ -172,7 +172,7 @@ class GridData1D(clawpack.clawutil.data.ClawData):
 
     def write(self,out_file='grid.data',data_source='setrun.py'):
 
-        self.open_data_file('grid.data',data_source)
+        self.open_data_file(out_file,data_source)
 
         self.data_write('grid_type')
         if self.grid_type == 2:
@@ -198,3 +198,29 @@ class GridData1D(clawpack.clawutil.data.ClawData):
                         self.grid_type = int(value)
                     elif varname == 'fname_celledges':
                         self.fname_celledges = value.strip()
+
+
+class BoussData1D(clawpack.clawutil.data.ClawData):
+    r"""
+    1D data object for Boussinesq info
+
+    """
+    def __init__(self):
+        super(BoussData1D,self).__init__()
+
+        self.add_attribute('bouss',True)
+        self.add_attribute('B_param',1./15.)
+        self.add_attribute('sw_depth0',20.)
+        self.add_attribute('sw_depth1',10.)
+
+    def write(self,out_file='bouss.data',data_source='setrun.py'):
+
+        self.open_data_file(out_file,data_source)
+
+        self.data_write('bouss')
+        self.data_write('B_param')
+        self.data_write('sw_depth0')
+        self.data_write('sw_depth1')
+
+        self.close_data_file()
+

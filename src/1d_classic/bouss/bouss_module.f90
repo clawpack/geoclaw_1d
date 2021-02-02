@@ -5,6 +5,10 @@ module bouss_module
     real(kind=8) :: B_param 
     real(kind=8) :: sw_depth0, sw_depth1
     integer :: bc_xlo, bc_xhi
+
+    ! for higher-order derivatives:
+    real(kind=8), allocatable, dimension(:) :: dxm, dxc, cm, cp, c0
+
     
     ! for tridiagonal solver:
     integer, allocatable, dimension(:) :: IPIV
@@ -22,12 +26,12 @@ contains
     ! Set things up for Boussinesq solver, in particular
     ! create and factor tridiagonal matrix for implicit solves.
 
-    use geoclaw_module, only: sea_level
-    use grid_module, only: xcell, zcell, dxm, dxc, cm, cp, c0
+    use geoclaw_module, only: sea_level, coordinate_system
+    use grid_module, only: xcell, zcell, grid_type
     
     implicit none
     integer, intent(in) :: mx, mbc, mthbc(2)
-    real(kind=8) :: DLi
+    real(kind=8) :: DLi, r
     integer :: i, iunit
     character*25 fname
     real(kind=8), dimension(1-mbc:mx+mbc) :: h0, h02, h03
@@ -44,6 +48,7 @@ contains
     read(7,*) sw_depth0
     read(7,*) sw_depth1
     
+    allocate(dxm(0:mx+1),dxc(0:mx+1),cm(0:mx+1),cp(0:mx+1),c0(0:mx+1))
 
     ! Boundary conditions to impose in computing Boussinesq update:
     
@@ -78,6 +83,43 @@ contains
     !bc_xlo = 1
     !bc_xhi = 1
     
+    
+    !------------------------------------
+    ! coefficients needed for second-order derivatives:
+
+    do i=0,mx+2
+        dxm(i) = xcell(i) - xcell(i-1)
+    enddo
+
+    do i=0,mx+1
+        if (grid_type == 0) then
+            ! uniform grid
+            dxc(i) = 2*dxm(i)
+            cm(i) = 1.d0/dxm(i)**2
+            c0(i) = -2.d0/dxm(i)**2
+            cp(i) = 1.d0/dxm(i)**2
+        else
+            dxc(i) = (xcell(i+1) - xcell(i-1))  ! = 2*dx for uniform grid!
+            cm(i) = 2.d0 / (dxm(i)*dxc(i))
+            cp(i) = 2.d0 / (dxm(i+1)*dxc(i))
+            c0(i) = -(cm(i) + cp(i))
+        endif
+
+        if (coordinate_system == -1) then
+            ! x = radial coordinate r >= 0
+            ! include factors for ((1/r)*(r*q)_r)_r 
+            ! using form q_{rr} + (1/r)q_r - (1/r**2)q
+            r = xcell(i)
+            cm(i) = cm(i) - 1.d0/(r*dxc(i))
+            cp(i) = cp(i) + 1.d0/(r*dxc(i))
+            c0(i) = c0(i) - 1.d0/(r**2)
+        else if (coordinate_system == 2) then
+            write(6,*) '*** latitude coordinates not yet implemented in Bouss'
+            stop
+        endif
+    enddo
+
+        
     
     !------------------------------------
     ! Form tridiagonal matrix and factor
@@ -188,7 +230,8 @@ contains
     ! arrays D, DL, DU, DU2, IPIV are already set up for the solver.
     
     use geoclaw_module, only: g => grav, sea_level, dry_tolerance
-    use grid_module, only: xcell, dxm, dxc, cm, cp, c0, radial
+    use geoclaw_module, only: coordinate_system
+    use grid_module, only: xcell
 
     implicit none
 
@@ -255,9 +298,13 @@ contains
         !s1(i) =  g*h_eta_x(i)  ! debug
         !s1(i) =  (hu2(i+1) - hu2(i-1)) / dxc(i) 
                  
-        if (radial) then
-            ! add term for (1/r)*h*u**2:
+        if (coordinate_system == -1) then
+            ! radial: add term for (1/r)*h*u**2:
             s1(i) =  s1(i) + hu2(i) / xcell(i) 
+        else if (coordinate_system == 2) then
+            ! latitude
+            write(6,*) '*** latitude not yet implemented in bouss_module'
+            stop
         endif
         
         ! compute s1_h0 = s1 / h0:
