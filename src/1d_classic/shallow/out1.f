@@ -94,13 +94,14 @@ c
          close(unit=70)
       endif
 
-      write(60,1000) t,meqn+1,ngrids,maux,1
+      write(60,1000) t,meqn+1,ngrids,maux,1,mbc
 
  1000 format(e26.16,'    time', /,
      &       i5,'                 mvars'/,
      &       i5,'                 ngrids'/,
      &       i5,'                 maux'/,
-     &       i5,'                 ndim'/,/)
+     &       i5,'                 ndim'/,
+     &       i5,'                 nghost'/,/)
 c
 
       close(unit=50)
