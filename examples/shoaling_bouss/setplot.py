@@ -16,7 +16,7 @@ try:
     d = numpy.loadtxt(fname)
     etamax = numpy.where(d[:,1]>1e-6, d[:,2], numpy.nan)
     xmax = d[:,0]
-    jmax = where(d[:,1]>0)[0].max()
+    jmax = numpy.where(d[:,1]>0)[0].max()
     print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2]))
     print('Loaded hmax from ',fname)
 except:
@@ -70,7 +70,7 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
+    #plotitem.show = False
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'g'
     plotitem.MappedGrid = True
@@ -176,7 +176,7 @@ def setplot(plotdata):
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
 
 
