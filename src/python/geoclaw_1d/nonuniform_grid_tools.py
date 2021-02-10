@@ -38,7 +38,7 @@ def make_pwlin_topo_fcn(xzpairs):
 
 
 def make_celledges_cfl(xlower, xupper, mx, topo_fcn, hmin,
-                       cfl=1., fname='celledges.txt', plot_topo=False):
+                       fname='celledges.txt', plot_topo=False):
 
     grav = 9.81
 
@@ -61,24 +61,54 @@ def make_celledges_cfl(xlower, xupper, mx, topo_fcn, hmin,
     xc = linspace(0, 1, mx+1)   # computational grid
     xp = cinv(xc)
     z = topo_fcn(xp)
+    dxp = diff(xp)
+    
+    if plot_topo:
+        figure(97, figsize=(8,8))
+        clf()
+        subplot(211)
+        #plot(csum, xunif, 'b')
+        plot(xunif, csum, 'b')
+        ylabel('computational coordinate xc')
+        grid(True)
+        axis([xlower,xupper,0,1])
+        title('inverse of mapc2p function')
+
+        subplot(212)
+        xcell = 0.5*(xp[1:] + xp[:-1])
+        plot(xcell, dxp, 'b')
+        xlabel('physical coordinate xp')
+        ylabel('delta x')
+        grid(True)
+        xlim(xlower,xupper)
+        title('Mesh width')
+        tight_layout()
+        
+        png_fname = 'cellmap.png'
+        savefig(png_fname)
+        print("Created ",png_fname)
 
     with open(fname,'w') as f:
         f.write('%i   # number of cell edges\n' % (mx+1))
 
         for i in range(mx+1):
-            f.write('%15.4f %15.4f\n' % (xp[i],z[i]))
+            f.write('%15.8f %15.8f\n' % (xp[i],z[i]))
         f.close()
 
-    print("Created %s, containing cell edges" % fname)
+    print("Created %s, containing %i cell edges" % (fname,mx+1))
+    print("Min dx = %g, Max dx = %g" % (dxp.min(),dxp.max()))
 
     if plot_topo:
-        figure(1, figsize=(8,4))
+        figure(99, figsize=(8,4))
         clf()
         fill_between(xp,where(z<0,z,nan),0.,color=[.5,.5,1])
         plot(xp,z,'g')
         xlim(xlower,xupper)
-        ylim(z.min()-500,500)
-        fname = 'topo.png'
-        savefig(fname)
-        print("Created ",fname)
+        zmargin = 0.1*(z.max()-z.min())
+        ylim(z.min()-zmargin,z.max()+zmargin)
+        grid(True)
+        title('Topography')
+        png_fname = 'topo.png'
+        savefig(png_fname)
+        print("Created ",png_fname)
 
