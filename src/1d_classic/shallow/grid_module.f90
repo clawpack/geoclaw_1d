@@ -14,14 +14,25 @@ module grid_module
 
     ! to keep track of max depth, speed over all time:
     real(kind=8), allocatable, dimension(:) ::  hmax, smax
+    integer, parameter :: iunit_fgmax = 7  ! open/close in claw1ez
+    logical :: monitor_fgmax
 
+    ! to print out total zeta mass each step:
     integer, parameter :: iunit_total_zeta_mass = 69
+    logical :: monitor_total_zeta
+
+    ! to print out runup each step:
+    integer, parameter :: iunit_runup = 71
+    real(kind=8) :: runup_tolerance
+    logical :: monitor_runup
 
 contains
 
 subroutine set_grid(mx,dx)
 
     use geoclaw_module, only: earth_radius, coordinate_system
+    use geoclaw_module, only: dry_tolerance
+
     implicit none
 
     integer, intent(in) :: mx
@@ -123,16 +134,30 @@ subroutine set_grid(mx,dx)
         zcell(i) = 0.5d0*(z_edge(i) + z_edge(i+1))
     enddo
 
+    monitor_fgmax = .true.  ! add to setrun?
+    if (monitor_fgmax) then
+        ! for keeping track of max depth, speed over all time:
+        ! initialize here and update in b4step1
+        allocate(hmax(mx), smax(mx))
+        hmax(:) = 0.d0
+        smax(:) = 0.d0
+    endif
 
-    ! for keeping track of max depth, speed over all time:
-    ! initialize here and update in b4step1
-    allocate(hmax(mx), smax(mx))
-    hmax(:) = 0.d0
-    smax(:) = 0.d0
-
-    ! to write total_zeta_mass every time step from b4step1:
-    open(unit=iunit_total_zeta_mass, file='total_zeta_mass.txt', &
-         status='unknown',form='formatted')
+    monitor_total_zeta = .true.  ! add to setrun?
+    if (monitor_total_zeta) then
+        ! to write total_zeta_mass every time step from b4step1:
+        open(unit=iunit_total_zeta_mass, file='total_zeta_mass.txt', &
+             status='unknown',form='formatted')
+    endif
+    
+    monitor_runup = .true.  ! add to setrun?
+    if (monitor_runup) then
+        ! to write x,z from first/last wet cell 
+        ! every time step from b4step1:
+        open(unit=iunit_runup, file='runup.txt', &
+             status='unknown',form='formatted')
+        runup_tolerance = 2.d0*dry_tolerance   ! add to setrun?
+    endif
     
 end subroutine set_grid
 

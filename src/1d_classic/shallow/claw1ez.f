@@ -15,7 +15,10 @@ c
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
-      use grid_module, only: iunit_total_zeta_mass
+      use grid_module, only: monitor_total_zeta,iunit_total_zeta_mass
+      use grid_module, only: monitor_runup,iunit_runup,runup_tolerance
+      use grid_module, only: monitor_fgmax,iunit_fgmax
+      use grid_module, only: hmax, smax, xcell
       use topo_module, only: read_topo_settings
 
       implicit double precision (a-h,o-z)
@@ -62,7 +65,7 @@ c
       if (outstyle == 1) then
          read(55,*) nout
          read(55,*) tfinal
-         read(55,*) output_t0    ! Not currently used
+         read(55,*) output_t0
          nstepout = 1
       else if (outstyle == 2) then
          read(55,*) nout
@@ -185,7 +188,6 @@ c     # set gauges and geoclaw specific quantities:
       call set_gauges(.false., 2) ! no restart, nvar=2
       call set_geo()
       call set_grid(mx,dx)
-
       call read_topo_settings()
 c
 c     # call user's routine setprob to set any specific parameters
@@ -225,9 +227,11 @@ c     # set initial conditions:
 c
       call qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 c
-c        # output initial data
-      call out1(meqn,mbc,mx,xlower,dx,q,t0,0,aux,maux,
-     &          outaux_init_only .or. outaux_always)
+      if (output_t0) then
+c     # output initial data
+          call out1(meqn,mbc,mx,xlower,dx,q,t0,0,aux,maux,
+     &              outaux_init_only .or. outaux_always)
+      endif
 
       ! Allocate work array
       allocate(work(mwork), stat=allocate_status)
@@ -315,6 +319,20 @@ c
       end do
 c
   900 continue
+
+      if (monitor_fgmax) then
+          write(6,*) 'Writing fgmax.txt file with mx = ',mx
+          open(unit=iunit_fgmax, file='fgmax.txt', status='unknown',
+     &         form='formatted')
+          do i=1,mx
+             etamax = hmax(i) + aux(1,i)
+             write(iunit_fgmax,451) xcell(i),hmax(i),smax(i),etamax
+ 451         format(4f16.8)
+          enddo
+          close(iunit_fgmax)
+      endif
+
+
       if (allocated(q))        deallocate(q)
       if (allocated(aux))      deallocate(aux)
       if (allocated(work))     deallocate(work)
@@ -323,7 +341,16 @@ c
       if (allocated(iout_q))   deallocate(iout_q)
       if (allocated(iout_aux)) deallocate(iout_aux)
 
-      close(iunit_total_zeta_mass)
+      if (monitor_total_zeta) then
+          close(iunit_total_zeta_mass)
+          write(6,*) 'total_zeta_mass.txt written'
+      endif
+
+      if (monitor_runup) then
+          close(iunit_runup)
+          write(6,*) 'runup.txt written, used runup_tolerance = ', 
+     &               runup_tolerance
+      endif
 c
       return 
       end

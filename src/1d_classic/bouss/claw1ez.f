@@ -15,7 +15,9 @@ c
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
-      use grid_module, only: iunit_total_zeta_mass
+      use grid_module, only: monitor_total_zeta,iunit_total_zeta_mass
+      use grid_module, only: monitor_runup,iunit_runup,runup_tolerance
+      use grid_module, only: monitor_fgmax,iunit_fgmax
       use grid_module, only: hmax, smax, xcell
       use topo_module, only: read_topo_settings
       use bouss_module, only: set_bouss
@@ -33,7 +35,6 @@ c
       logical :: outaux_init_only, use_fwaves, output_t0
       logical :: outaux_always, dt_variable
       character*12 fname
-      integer :: hmaxunit
 c
       open(10,file='fort.info',status='unknown',form='formatted')
 
@@ -324,18 +325,17 @@ c
 c
   900 continue
 
-       hmaxunit = 45
-       write(6,*) 'Writing hmax file with mx = ',mx
-       open(unit=hmaxunit, file='fort.hmax', status='unknown',
-     &      form='formatted')
-       rewind hmaxunit
-       do i=1,mx
-          x = xcell(i)
-          etamax = hmax(i) + aux(1,i)
-          write(hmaxunit,451) x,hmax(i),etamax,smax(i)
- 451      format(4f16.8)
+      if (monitor_fgmax) then
+          write(6,*) 'Writing fgmax.txt file with mx = ',mx
+          open(unit=iunit_fgmax, file='fgmax.txt', status='unknown',
+     &         form='formatted')
+          do i=1,mx
+             etamax = hmax(i) + aux(1,i)
+             write(iunit_fgmax,451) xcell(i),hmax(i),smax(i),etamax
+ 451         format(4f16.8)
           enddo
-      close(hmaxunit)
+          close(iunit_fgmax)
+      endif
 
 
       if (allocated(q))        deallocate(q)
@@ -346,9 +346,16 @@ c
       if (allocated(iout_q))   deallocate(iout_q)
       if (allocated(iout_aux)) deallocate(iout_aux)
 
-      close(iunit_total_zeta_mass)
+      if (monitor_total_zeta) then
+          close(iunit_total_zeta_mass)
+          write(6,*) 'total_zeta_mass.txt written'
+      endif
 
-
+      if (monitor_runup) then
+          close(iunit_runup)
+          write(6,*) 'runup.txt written, used runup_tolerance = ', 
+     &               runup_tolerance
+      endif
 c
       return 
       end
