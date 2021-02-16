@@ -14,9 +14,16 @@ from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 # Read in nonuniform computational cell edges, which should have
 # been created using make_celledges.py:
 
+# This file also contains the topography
+
+# The file celledges.data is created by make_celledges.py and contains
+# both the edges of the computational grid cells a topography values
+# at these points
+
+fname_celledges = 'celledges.data'
+
+# Create the makec2p function based on these cell edges:
 grid_type = 2
-fname_celledges = 'celledges.txt'
-    
 mapc2p, mx_edge, xp_edge = make_mapc2p(fname_celledges)
 mx = mx_edge - 1
         
@@ -261,7 +268,7 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.coordinate_system = 1  # linear distance (meters)
 
     topo_data = rundata.topo_data
-    topo_data.topofiles.append([1, 'celledges.txt'])
+    topo_data.topofiles.append([1, fname_celledges])
 
 
     # ---------------

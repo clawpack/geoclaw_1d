@@ -1,5 +1,4 @@
 
-
 import os, sys
 
 try:
@@ -25,7 +24,7 @@ except:
     xmax = None
     print("Failed to load fort.hmax")
 
-xlimits = [-10,8.19]
+xlimits = [-14,8.19]
 
 
 outdir2 = None
@@ -36,7 +35,7 @@ def setplot(plotdata):
     plotdata.clearfigures()
 
     outdir1 = plotdata.outdir
-    mapc2p1, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir1,'celledges.txt'))
+    mapc2p1, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir1,'celledges.data'))
     
     from clawpack.amrclaw.data import GaugeData 
     setgauges = GaugeData() 
@@ -49,7 +48,7 @@ def setplot(plotdata):
     
 
     if outdir2:
-        mapc2p2, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir2,'celledges.txt'))
+        mapc2p2, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir2,'celledges.data'))
 
 
     def fixticks1(current_data):
@@ -77,7 +76,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(311)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [0,0.12]
+    plotaxes.ylimits = [-0.05,0.2]
     plotaxes.title = 'Surface displacement'
     plotaxes.afteraxes = fixticks
 
@@ -105,7 +104,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(312)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-0.1,0.2]
+    plotaxes.ylimits = [-0.4,0.2]
     plotaxes.title = 'Velocity'
     plotaxes.afteraxes = fixticks1
     plotitem.MappedGrid = True
