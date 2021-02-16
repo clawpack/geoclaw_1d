@@ -20,7 +20,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     real(kind=8) :: h0, eta, eta_star, x0, ampl, u, u_star, c, kappa, a
 
-    x0 = -7.52d0   ! initial location of wave
+    x0 = -9.14d0   ! initial location of wave
     a = 0.259d0  ! dimensionless amplitude
     h0 = 0.218d0  ! depth for scaling
     ampl = a*h0  ! amplitude
