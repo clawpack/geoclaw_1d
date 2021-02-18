@@ -2,7 +2,6 @@ from pylab import *
 from scipy.interpolate import interp1d
 import numpy as np
 import os
-from scipy.interpolate import interp1d
 
 
 def make_mapc2p(fname_celledges='celledges.txt'):
