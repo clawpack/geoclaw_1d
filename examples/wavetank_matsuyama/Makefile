@@ -64,7 +64,7 @@ include $(CLAWMAKE)
 .PHONY: topo all
 
 topo:
-	python makegrid.py
+	python make_celledges.py
 
 all: 
 	$(MAKE) topo
