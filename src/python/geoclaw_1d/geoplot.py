@@ -8,10 +8,14 @@ drytol_default = 1e-3
 
 def topo(current_data):
    """
-   topo is assumed to be aux[0,:]
+   Return topography = eta - h.
+   Surface eta is assumed to be output as 4th column of fort.q files.
    """
-   aux = current_data.aux
-   topo = aux[0,:]
+   #aux = current_data.aux
+   #topo = aux[0,:]
+   h = current_data.q[0,:]
+   eta = current_data.q[2,:]
+   topo = eta - h
    return topo
 
 def land(current_data):
@@ -23,7 +27,7 @@ def land(current_data):
    q = current_data.q
    aux = current_data.aux
    h = q[0,:]
-   eta = aux[0,:] + h
+   eta = q[2,:]
    land = ma.masked_where(h>drytol, eta)
    return land
 
@@ -49,7 +53,8 @@ def surface(current_data):
     q = current_data.q
     aux = current_data.aux
     h = q[0,:]
-    eta = aux[0,:] + h
+    #eta = aux[0,:] + h
+    eta = q[2,:]
     water = ma.masked_where(h<=drytol, eta)
     return water
 
