@@ -9,15 +9,17 @@ except:
 
 
 from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
+from clawpack.clawutil.data import ClawData
 import numpy
 
+
 try:
-    fname = '_output/fort.hmax'
+    fname = '_output/fgmax.txt'
     d = numpy.loadtxt(fname)
-    etamax = numpy.where(d[:,1]>1e-6, d[:,2], numpy.nan)
+    etamax = numpy.where(d[:,1]>1e-6, d[:,3], numpy.nan)
     xmax = d[:,0]
     jmax = numpy.where(d[:,1]>0)[0].max()
-    print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2]))
+    print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,3]))
     print('Loaded hmax from ',fname)
 except:
     xmax = None
@@ -25,14 +27,31 @@ except:
 
 xlimits = [0,64e3]
 
-fname_celledges = os.path.abspath('celledges.txt')
+
+outdir2 = None
+#outdir2 = os.path.abspath('_output_mx12000_partial')
+#outdir2 = os.path.abspath('_output_mx5000_aneg')
 
 def setplot(plotdata):
 
     plotdata.clearfigures()
 
     outdir1 = plotdata.outdir
-    mapc2p1, mx_edge, xp_edge = make_mapc2p(fname_celledges)
+    mapc2p1, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir1,'celledges.txt'))
+    
+    from clawpack.amrclaw.data import GaugeData 
+    setgauges = GaugeData() 
+    setgauges.read(outdir1)
+    gauge_xc = {}
+    for k in range(len(setgauges.gauges)):
+        gauge = setgauges.gauges[k]
+        gaugeno = gauge[0]
+        gauge_xc[gaugeno] = gauge[1]
+    
+
+    if outdir2:
+        mapc2p2, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir2,'celledges.txt'))
+
 
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid,tight_layout
@@ -69,6 +88,14 @@ def setplot(plotdata):
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
+    if outdir2:
+        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+        plotitem.outdir = outdir2
+        plotitem.plot_var = geoplot.surface
+        plotitem.color = 'm'
+        plotitem.MappedGrid = True
+        plotitem.mapc2p = mapc2p2
+
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     #plotitem.show = False
     plotitem.plot_var = geoplot.topo
@@ -79,22 +106,30 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(312)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-300,300]
+    plotaxes.ylimits = [-15,25]
     plotaxes.title = 'Velocity'
     plotaxes.afteraxes = fixticks1
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = velocity
+    plotitem.plot_var = geoplot.velocity
     plotitem.color = 'b'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
+    if outdir2:
+        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+        plotitem.outdir = outdir2
+        plotitem.plot_var = geoplot.velocity
+        plotitem.color = 'm'
+        plotitem.MappedGrid = True
+        plotitem.mapc2p = mapc2p2
+
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(313)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-1200,200]
+    plotaxes.ylimits = [-4100,100]
     plotaxes.title = 'Full depth'
     plotaxes.afteraxes = fixticks1
     plotitem.MappedGrid = True
@@ -188,8 +223,20 @@ def setplot(plotdata):
     plotfigure.clf_each_gauge = True
 
     plotaxes = plotfigure.new_plotaxes()
+    
+    def fixgauge(current_data):
+        from pylab import grid, title
+        grid(True)
+        gaugeno = current_data.gaugeno
+        xc = gauge_xc[gaugeno]
+        xp = mapc2p1(xc)
+        print('+++ xc,xp:', xc,xp)
+        title('Surface elevation at Gauge %i, x = %.0f m' \
+              % (gaugeno, xp))
+
+    plotaxes.afteraxes = fixgauge
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = [-2,2]
+    plotaxes.ylimits = [-100,150]
     plotaxes.title = 'Surface elevation eta'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 2  # eta

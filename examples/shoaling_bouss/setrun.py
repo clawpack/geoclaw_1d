@@ -133,8 +133,8 @@ def setrun(claw_pkg='geoclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 60
-        clawdata.tfinal = 1200.
+        clawdata.num_output_times = 100
+        clawdata.tfinal = 2000.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -183,7 +183,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.dt_max = 1.e9
 
     # Desired Courant number if variable dt used
-    clawdata.cfl_desired = 0.75
+    clawdata.cfl_desired = 0.25
     # max Courant number to allow without retaking step with a smaller dt:
     clawdata.cfl_max = 1.0
 
@@ -259,8 +259,8 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.friction_forcing = True
     geo_data.manning_coefficient =.025
 
-    #geo_data.coordinate_system = 1  # linear distance (meters)
-    geo_data.coordinate_system = -1  # radial distance (meters)
+    geo_data.coordinate_system = 1  # linear distance (meters)
+    #geo_data.coordinate_system = -1  # radial distance (meters)
 
     topo_data = rundata.topo_data
     topo_data.topofiles.append([1, 'celledges.txt'])
@@ -278,7 +278,7 @@ def setrun(claw_pkg='geoclaw'):
     # to corresponding xc as follows:
 
     if 1:
-        xp_gauges = [10e3, 50e3, 60e3]
+        xp_gauges = [10e3, 50e3, 58e3, 60e3]
         for k,xp_g in enumerate(xp_gauges):
             gaugeno = k+1  
             # compute computational point xc_g that maps to xp_g:

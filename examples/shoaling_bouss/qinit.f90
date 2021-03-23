@@ -20,7 +20,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     real(kind=8) :: eta, width, x0, ampl
 
-    width = 5.d3    ! controls width of Gaussian
+    width = 10.d3    ! controls width of Gaussian
     x0 = 0.d3   ! initial location of Gaussian
     ampl = 100.d0  ! amplitude
 
