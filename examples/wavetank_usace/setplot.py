@@ -28,7 +28,7 @@ xlimits = [-14,8.19]
 
 
 outdir2 = None
-#outdir2 = os.path.abspath('_output_mx12000_partial')
+outdir2 = os.path.abspath('_output_swe')
 
 def setplot(plotdata):
 
@@ -90,7 +90,7 @@ def setplot(plotdata):
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.outdir = outdir2
         plotitem.plot_var = geoplot.surface
-        plotitem.color = 'm'
+        plotitem.color = 'k'
         plotitem.MappedGrid = True
         plotitem.mapc2p = mapc2p2
 
@@ -120,7 +120,7 @@ def setplot(plotdata):
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.outdir = outdir2
         plotitem.plot_var = geoplot.velocity
-        plotitem.color = 'm'
+        plotitem.color = 'k'
         plotitem.MappedGrid = True
         plotitem.mapc2p = mapc2p2
 
