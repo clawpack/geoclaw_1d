@@ -27,8 +27,11 @@ except:
 xlimits = [-14,8.19]
 
 
-outdir2 = None
+#outdir2 = None
+
 outdir2 = os.path.abspath('_output_swe')
+if not os.path.isdir(outdir2):
+    outdir2 = None
 
 def setplot(plotdata):
 
@@ -104,7 +107,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(312)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-0.4,0.2]
+    plotaxes.ylimits = [-0.6,0.6]
     plotaxes.title = 'Velocity'
     plotaxes.afteraxes = fixticks1
     plotitem.MappedGrid = True
