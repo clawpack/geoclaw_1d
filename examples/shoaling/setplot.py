@@ -180,7 +180,7 @@ def setplot(plotdata):
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'k'
     plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p
+    plotitem.mapc2p = mapc2p1
 
 
 
