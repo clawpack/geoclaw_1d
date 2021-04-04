@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 
-def make_mapc2p(fname_celledges='celledges.txt'):
+def make_mapc2p(fname_celledges='celledges.data'):
     """
     Create a mapc2p function that maps computational cell edges xc
     with 0 <= xc <= 1 to the physical cell edges.  The physical
@@ -37,7 +37,7 @@ def make_pwlin_topo_fcn(xzpairs):
 
 
 def make_celledges_cfl(xlower, xupper, mx, topo_fcn, hmin,
-                       fname='celledges.txt', plot_topo=False):
+                       fname='celledges.data', plot_topo=False):
 
     grav = 9.81
 
