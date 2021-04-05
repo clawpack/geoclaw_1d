@@ -15,7 +15,7 @@ from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 # been created using make_celledges.py:
 
 grid_type = 2
-fname_celledges = 'celledges.txt'
+fname_celledges = 'celledges.data'
     
 mapc2p, mx_edge, xp_edge = make_mapc2p(fname_celledges)
 mx = mx_edge - 1
@@ -133,8 +133,8 @@ def setrun(claw_pkg='geoclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 32
-        clawdata.tfinal = 160.
+        clawdata.num_output_times = 48
+        clawdata.tfinal = 120.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -261,7 +261,7 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.coordinate_system = 1  # linear distance (meters)
 
     topo_data = rundata.topo_data
-    topo_data.topofiles.append([1, 'celledges.txt'])
+    topo_data.topofiles.append([1, 'celledges.data'])
 
 
     # ---------------
@@ -276,10 +276,12 @@ def setrun(claw_pkg='geoclaw'):
     # to corresponding xc as follows:
 
     if 1:
-        xp_gauges = [-150, -80., -40, -30, -20, -10, 0]
+        #xp_gauges = [-150, -80., -40, -30, -20, -10, 0]
+        xp_gauges = [-150, -80., -60, -50, -40, -32, -31.2, -30.8, -30, \
+                     -28, -20, -10, -5]
         for k,xp_g in enumerate(xp_gauges):
             #gaugeno = k+1  
-            gaugeno = int(-xp_g)
+            gaugeno = int(-xp_g*10)
             # compute computational point xc_g that maps to xp_g:
             ii = np.where(xp_edge < xp_g)[0][-1]
             xp_frac = (xp_g - xp_edge[ii])/(xp_edge[ii+1] - xp_edge[ii])

@@ -25,7 +25,7 @@ except:
 
 xlimits = [-160,40]
 
-fname_celledges = os.path.abspath('celledges.txt')
+fname_celledges = os.path.abspath('celledges.data')
 
 def setplot(plotdata):
 

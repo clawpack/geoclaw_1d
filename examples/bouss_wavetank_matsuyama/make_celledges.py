@@ -20,5 +20,5 @@ mx = 8000
 hmin = 0.05  # use uniform grid in shallower water
 
 nonuniform_grid_tools.make_celledges_cfl(xlower, xupper, mx, topo_fcn,
-        hmin, fname='celledges.txt', plot_topo=True)
+        hmin, fname='celledges.data', plot_topo=True)
 
