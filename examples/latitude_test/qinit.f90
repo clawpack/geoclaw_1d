@@ -8,8 +8,8 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
     !  loop over all grid cells to set values of q(1:meqn, 1:mx).
 
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
-    use geoclaw_module, only: grav  !uncomment if needed
-    use grid_module, only: xgrid,zgrid,mx_grid
+    !use geoclaw_module, only: grav  !uncomment if needed
+    use grid_module, only: xcell,zcell
 
     implicit none
 
@@ -20,23 +20,19 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     !locals
     integer :: i
-    real(kind=8) :: xcell,r,x0
+    real(kind=8) :: x,x0
 
-    real(kind=8) :: eta
-    real(kind=8) :: dz(mx)
+    real(kind=8) :: eta, width
 
-    ! assume displaced surface agrees with sea floor deformation
-    open(unit=33,file='dtopo_okada.data',status='old',form='formatted')
-
-    do i=1,mx
-        read(33,*) dz(i)
-        enddo
+    width = 5    ! controls width of Gaussian
+    x0 = 0.   ! initial location of Gaussian
 
     do i=1,mx
-        eta = dz(i)
-        q(1,i) = max(0.d0, eta - aux(1,i))
-        q(2,i) = 0.d0
-
+      x = xcell(i)  ! latitude in degrees
+      eta = 2.d0 * exp(-((x-x0)/width)**2)
+      if (eta < 1d-20) eta = 0.d0
+      q(1,i) = max(0.0, eta - aux(1,i))
+      q(2,i) = 0.d0 
    enddo
 
 

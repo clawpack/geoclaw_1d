@@ -8,6 +8,7 @@ Classes representing parameters for 1D GeoClaw runs
 
  - GeoClawData1D
  - GaugeData1D
+ - GridData1D
 
 :Constants:
 
@@ -157,4 +158,69 @@ class GaugeData1D(clawpack.clawutil.data.ClawData):
 
         gauge_file.close()
 
+
+class GridData1D(clawpack.clawutil.data.ClawData):
+    r"""
+    1D data object for grid info
+
+    """
+    def __init__(self):
+        super(GridData1D,self).__init__()
+
+        self.add_attribute('grid_type',0)
+        self.add_attribute('fname_celledges',None)
+
+    def write(self,out_file='grid.data',data_source='setrun.py'):
+
+        self.open_data_file(out_file,data_source)
+
+        self.data_write('grid_type')
+        if self.grid_type == 2:
+            if self.fname_celledges is None:
+                self.fname_celledges = 'celledges.txt'
+                print('*** grid_type ==2 and fname_celledges not specified,')
+                print('*** using celledges.txt')
+            # if path is relative in setrun, assume it's relative to the
+            # same directory that out_file comes from
+            fname = os.path.abspath(os.path.join(os.path.dirname(out_file),
+                                    self.fname_celledges))
+            self._out_file.write("\n'%s'   =: fname_celledges\n " % fname)
+            #self.data_write('fname_celledges')
+        self.close_data_file()
+
+    def read(self, path, force=False):
+        with open(os.path.abspath(path), 'r') as data_file:
+            for line in data_file:
+                if "=:" in line:
+                    value, tail = line.split("=:")
+                    varname = tail.split()[0]
+                    if varname == 'grid_type':
+                        self.grid_type = int(value)
+                    elif varname == 'fname_celledges':
+                        self.fname_celledges = value.strip()
+
+
+class BoussData1D(clawpack.clawutil.data.ClawData):
+    r"""
+    1D data object for Boussinesq info
+
+    """
+    def __init__(self):
+        super(BoussData1D,self).__init__()
+
+        self.add_attribute('bouss',True)
+        self.add_attribute('B_param',1./15.)
+        self.add_attribute('sw_depth0',20.)
+        self.add_attribute('sw_depth1',10.)
+
+    def write(self,out_file='bouss.data',data_source='setrun.py'):
+
+        self.open_data_file(out_file,data_source)
+
+        self.data_write('bouss')
+        self.data_write('B_param')
+        self.data_write('sw_depth0')
+        self.data_write('sw_depth1')
+
+        self.close_data_file()
 

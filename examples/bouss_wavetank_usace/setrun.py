@@ -8,23 +8,26 @@ that will be read in by the Fortran code.
 
 import os, sys
 import numpy as np
-from mapc2p import make_mapc2p
+from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 
 
-# Read in nonuniform computational grid, which should have
-# been created using makegrid.py:
+# Read in nonuniform computational cell edges, which should have
+# been created using make_celledges.py:
 
-rundir = os.getcwd()
-mapc2p, ngrid = make_mapc2p(rundir)
-grid_data_file = os.path.join(rundir, 'grid.data')
-print('Found %i grid edges in %s' % (ngrid, grid_data_file))
-mx = ngrid - 1
+# This file also contains the topography
+
+# The file celledges.data is created by make_celledges.py and contains
+# both the edges of the computational grid cells a topography values
+# at these points
+
+fname_celledges = 'celledges.data'
+
+# Create the makec2p function based on these cell edges:
+grid_type = 2
+mapc2p, mx_edge, xp_edge = make_mapc2p(fname_celledges)
+mx = mx_edge - 1
         
-#dxc = 1./mx
-#xc = np.linspace(dxc/2., 1-dxc/2., mx)   # computational cell centers
-xc = np.linspace(0,1,ngrid) # computational cell edges
-xp = mapc2p(xc)  # corresponding physical cell edges
-print('Setting mx = %i, cell edges from %g to %g' % (mx,xp[0],xp[-1]))
+print('Setting mx = %i, cell edges from %g to %g' % (mx,xp_edge[0],xp_edge[-1]))
 
 
 #------------------------------
@@ -79,8 +82,19 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.upper[0] = 1.           # xupper
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 1000       # mx
+    clawdata.num_cells[0] = mx
+    
+    from clawpack.geoclaw_1d.data import GridData1D
+    rundata.add_data(GridData1D(),'grid_data')
+    rundata.grid_data.grid_type = grid_type  # should be set to 2 above
+    rundata.grid_data.fname_celledges = fname_celledges
 
+    from clawpack.geoclaw_1d.data import BoussData1D
+    rundata.add_data(BoussData1D(),'bouss_data')
+    rundata.bouss_data.bouss = True
+    rundata.bouss_data.B_param = 1./15.
+    rundata.bouss_data.sw_depth0 = 0.005
+    rundata.bouss_data.sw_depth1 = 0.005
 
     # ---------------
     # Size of system:
@@ -126,19 +140,19 @@ def setrun(claw_pkg='geoclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 55
-        clawdata.tfinal = 550.
-        clawdata.output_t0 = False  # output at initial (or restart) time?
+        clawdata.num_output_times = 50
+        clawdata.tfinal = 25.
+        clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
         # Include t0 if you want output at the initial time.
-        clawdata.output_times =  [0.2,1.6,2.9,4.3,5.6,6.9,8.3,9.6,10.9]
+        clawdata.output_times =  []
 
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
         clawdata.output_step_interval = 1
-        clawdata.total_steps = 20
+        clawdata.total_steps = 10
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
@@ -170,15 +184,15 @@ def setrun(claw_pkg='geoclaw'):
 
     # Initial time step for variable dt.
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 1.
+    clawdata.dt_initial = 0.01
 
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.e9
 
     # Desired Courant number if variable dt used
-    clawdata.cfl_desired = 0.15
+    clawdata.cfl_desired = 0.25
     # max Courant number to allow without retaking step with a smaller dt:
-    clawdata.cfl_max = 0.2
+    clawdata.cfl_max = 1.0
 
     # Maximum number of time steps to allow between output times:
     clawdata.steps_max = 50000
@@ -228,8 +242,8 @@ def setrun(claw_pkg='geoclaw'):
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
 
     clawdata.bc_lower[0] = 'extrap'   # at xlower
-    #clawdata.bc_lower[0] = 'wall'   # at xlower
-    clawdata.bc_upper[0] = 'extrap'   # at xupper
+    clawdata.bc_upper[0] = 'wall'   # at xupper
+
 
     # Specify type of each aux variable in amrdata.auxtype.
     # This must be a list of length maux, each element of which is one of:
@@ -241,7 +255,7 @@ def setrun(claw_pkg='geoclaw'):
 
     geo_data = rundata.geo_data
 
-    geo_data.dry_tolerance = 1.e-3
+    geo_data.dry_tolerance = 1.e-6
 
     # Friction source terms:
     #   src_split > 0 required
@@ -251,6 +265,10 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.friction_forcing = True
     geo_data.manning_coefficient =.025
 
+    geo_data.coordinate_system = 1  # linear distance (meters)
+
+    topo_data = rundata.topo_data
+    topo_data.topofiles.append([1, fname_celledges])
 
 
     # ---------------
@@ -265,12 +283,13 @@ def setrun(claw_pkg='geoclaw'):
     # to corresponding xc as follows:
 
     if 1:
-        xp_gauges = [-100e3, -20e3]   # km
-        for k,xp_g in enumerate(xp_gauges):
-            gaugeno = k+1  
+        xp_gauges = {5:0., 7:4.36, 8:5.825}
+        for gaugeno in xp_gauges.keys():
+            #gaugeno = k+1  
+            xp_g = xp_gauges[gaugeno]
             # compute computational point xc_g that maps to xp_g:
-            ii = np.where(xp < xp_g)[0][-1]
-            xp_frac = (xp_g - xp[ii])/(xp[ii+1] - xp[ii])
+            ii = np.where(xp_edge < xp_g)[0][-1]
+            xp_frac = (xp_g - xp_edge[ii])/(xp_edge[ii+1] - xp_edge[ii])
             xc_g = (ii + xp_frac)/float(mx)
             print('gaugeno = %i: physical location xp_g = %g maps to xc_g = %.12f' \
                   % (gaugeno,xp_g, xc_g))

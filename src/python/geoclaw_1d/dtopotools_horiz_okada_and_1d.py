@@ -90,9 +90,12 @@ unit_conversion_factor['N-m'] = 1.
 unit_conversion_factor['dyne-cm'] = 1.e-7
 
 # Check that these are consistent:
-check = [unit_conversion_factor[standard_units[param]] is 1. for param in \
+check = [unit_conversion_factor[standard_units[param]] == 1. for param in \
          standard_units.keys()]
 if not numpy.alltrue(check):
+    print("*** conversion factors for standard units: ",
+          [unit_conversion_factor[standard_units[param]] for param in  \
+          standard_units.keys()])
     raise ValueError("Conversion factors should be 1 for all standard_units")
 
 
@@ -113,7 +116,7 @@ def convert_units(value, io_units, direction=1, verbose=False):
         factor = unit_conversion_factor[io_units]
     except:
         factor = 1.
-        print "*** Warning: unrecoginized units in convert_units, not converting"
+        print("*** Warning: unrecoginized units in convert_units, not converting")
         #raise ValueError("Unrecognized io_units %s, must be one of %s" \
         #      % (io_units, unit_conversion_factor.keys()))
     if direction == 1:
@@ -142,10 +145,10 @@ def plot_dZ_contours(x, y, dZ, axes=None, dZ_interval=0.5, verbose=False,
 
     if len(clines) > 0:
         if verbose:
-            print "Plotting contour lines at: ",clines
+            print("Plotting contour lines at: ",clines)
         axes.contour(x, y, dZ, clines, colors='k')
     else:
-        print "No contours to plot"
+        print("No contours to plot")
 
     return axes
 
@@ -162,8 +165,8 @@ def plot_dZ_colors(x, y, dZ, axes=None, cmax_dZ=None, dZ_interval=None,
     if axes is None:
         fig = plt.figure(**fig_kwargs)
         axes = fig.add_subplot(1, 1, 1)
-    #print "+++ in plot_dZ_colors, axes = ",axes
-    #print "+++ in plot_dZ_colors, id(axes) = ",id(axes)
+    #print("+++ in plot_dZ_colors, axes = ",axes)
+    #print("+++ in plot_dZ_colors, id(axes) = ",id(axes))
 
     dZmax = numpy.abs(dZ).max()
     if cmax_dZ is None:
@@ -186,10 +189,10 @@ def plot_dZ_colors(x, y, dZ, axes=None, cmax_dZ=None, dZ_interval=None,
     clines = list(-numpy.flipud(clines1)) + list(clines1)
     if len(clines) > 0:
         if verbose:
-            print "Plotting contour lines at: ",clines
+            print("Plotting contour lines at: ",clines)
         axes.contour(x,y,dZ,clines,colors='k',linestyles='solid')
     elif verbose:
-        print "No contours to plot"
+        print("No contours to plot")
 
     y_ave = 0.5 * (y.min() + y.max())
     axes.set_aspect(1. / numpy.cos(y_ave * numpy.pi / 180.))
@@ -342,11 +345,11 @@ class DTopography(object):
         if dtopo_type == 1:
             data = numpy.loadtxt(path)
             if verbose:
-                print "Loaded file %s with %s lines" %(path,data.shape[0])
+                print("Loaded file %s with %s lines" %(path,data.shape[0]))
             t = list(set(data[:,0]))
             t.sort()
             if verbose:
-                print "times found: ",t
+                print("times found: ",t)
             ntimes = len(t)
             tlast = t[-1]
             lastlines = data[data[:,0]==tlast]
@@ -355,12 +358,13 @@ class DTopography(object):
             mx = len(xvals)
             my = len(lastlines) / mx
             if verbose:
-                print "Read dtopo: mx=%s and my=%s, at %s times" % (mx,my,ntimes)
+                print("Read dtopo: mx=%s and my=%s, at %s times" \
+                      % (mx,my,ntimes))
             X = numpy.reshape(lastlines[:,1],(my,mx))
             Y = numpy.reshape(lastlines[:,2],(my,mx))
             Y = numpy.flipud(Y)
             if verbose:
-                print "Returning dZ as a list of mx*my arrays"
+                print("Returning dZ as a list of mx*my arrays")
             dZ = None
             for n in range(ntimes):
                 i1 = n*mx*my
@@ -807,8 +811,8 @@ class Fault(object):
         dtopo.times = times
 
         if verbose:
-            print "Making Okada dz for each of %s subfaults" \
-                  % len(self.subfaults)
+            print("Making Okada dz for each of %s subfaults" \
+                  % len(self.subfaults))
 
         for k,subfault in enumerate(self.subfaults):
             if verbose:
@@ -942,7 +946,7 @@ class Fault(object):
             max_slip = max(abs(slip), max_slip)
             min_slip = min(abs(slip), min_slip)
         if verbose:
-            print "Max slip, Min slip: ",max_slip, min_slip
+            print("Max slip, Min slip: ",max_slip, min_slip)
 
         if slip_color:
             if cmap_slip is None:
@@ -1143,7 +1147,7 @@ class Fault(object):
 
     def plot_okada(self, axes=None, dim=1, displacement='vertical', kwargs={}):
         if (self.dtopo is None):
-	    raise ValueError("Need to call create_dtopography before plot_okada")
+            raise ValueError("Need to call create_dtopography before plot_okada")
 
         if (displacement is 'vertical'):
             if axes is None:
@@ -1165,7 +1169,7 @@ class Fault(object):
 
     def plot_okada_contour(self, axes=None, kwargs={}):
         if (self.dtopo is None):
-	    raise ValueError("Need to call create_dtopography before plot_okada_contour")
+            raise ValueError("Need to call create_dtopography before plot_okada_contour")
 
         X,Y = numpy.meshgrid(self.dtopo.x,self.dtopo.y)
         axes.contour(X*LAT2METER,Y*LAT2METER,self.dtopo.dZ[0,:,:],**kwargs)
@@ -1280,9 +1284,9 @@ class SubFault(object):
             converted_value = convert_units(value, input_units[param], 1)
             setattr(self,param,converted_value)
             if verbose:
-                print "%s %s %s converted to %s %s" \
+                print("%s %s %s converted to %s %s" \
                     % (param, value, input_units[param], converted_value, \
-                       standard_units[param])
+                       standard_units[param]))
 
 
     def Mo(self):
@@ -1906,9 +1910,9 @@ class CSVFault(Fault):
                     column_name = column_heading[:unit_start].lower()
                     units = column_heading[unit_start+1:unit_end]
                     if verbose and input_units.get(column_name,units) != units:
-                        print "*** Warning: input_units[%s] reset to %s" \
-                              % (column_name, units)
-                        print "    based on file header"
+                        print("*** Warning: input_units[%s] reset to %s" \
+                              % (column_name, units))
+                        print("    based on file header")
                         input_units[column_name] = units
 
                 else:
@@ -1918,8 +1922,8 @@ class CSVFault(Fault):
                     column_key = param[column_name]
                     column_map[column_key] = n
                 else:
-                    print "*** Warning: column name not recognized: %s" \
-                        % column_name
+                    print("*** Warning: column name not recognized: %s" \
+                        % column_name)
 
         super(CSVFault, self).read(path, column_map=column_map, skiprows=1,
                                 delimiter=",", input_units=input_units,

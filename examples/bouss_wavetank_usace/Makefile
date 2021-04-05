@@ -25,14 +25,15 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS ?=
+FFLAGS =  -llapack -lblas -g
+#FFLAGS ?=
 
 # ---------------------------------
 # package sources for this program:
 # ---------------------------------
 
-GEOLIB = $(CLAW)/geoclaw_1d/src/1d_nonuniform/shallow
-include $(GEOLIB)/Makefile.geoclaw_1d_nonuniform
+GEOLIB = $(CLAW)/geoclaw_1d/src/1d_classic/bouss
+include $(GEOLIB)/Makefile.geoclaw_1d_classic_bouss
 
 # ---------------------------------------
 # package sources specifically to exclude
@@ -52,6 +53,7 @@ MODULES = \
 
 SOURCES = \
   qinit.f90 \
+  setprob.f90 \
 
 
 #-------------------------------------------------------------------
@@ -59,17 +61,13 @@ SOURCES = \
 include $(CLAWMAKE)
 
 # Construct the topography data
-.PHONY: topo dtopo all
+.PHONY: topo all
 
 topo:
-	python makegrid.py
-
-dtopo:
-	python make_qinit_okada.py
+	python make_celledges.py
 
 all: 
 	$(MAKE) topo
-	$(MAKE) dtopo
 	$(MAKE) .plots
 	$(MAKE) .htmls
 

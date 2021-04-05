@@ -16,7 +16,7 @@ for s in fault.subfaults:
 
 times = [tend + 10]  # after all rupture motion
 
-xgrid,zgrid = loadtxt('grid.data', skiprows=1, unpack=True)
+xgrid,zgrid = loadtxt('grid.data', skiprows=3, unpack=True)
 xcell = 0.5*(xgrid[:-1] + xgrid[1:]) # cell centers
 
 x = xcell / 111.e3  # convert meters to longitude
@@ -26,14 +26,17 @@ dtopo = fault.create_dtopography(x,y,times)
 
 dz = dtopo.dZ[-1,0,:]  # slice in x at final time
 
-fname = 'qinit_okada.data'
+fname = 'dtopo_okada.data'
 savetxt(fname,dz)
 print("Created ",fname)
 
 
-if 0:
+if 1:
     figure(351)
     clf()
     plot(xcell,dz)
     title('Okada final deformation')
+    fname = 'dtopo_okada.png'
+    savefig(fname)
+    print('Created ',fname)
     
