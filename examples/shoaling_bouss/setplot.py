@@ -13,18 +13,6 @@ from clawpack.clawutil.data import ClawData
 import numpy
 
 
-try:
-    fname = '_output/fgmax.txt'
-    d = numpy.loadtxt(fname)
-    etamax = numpy.where(d[:,1]>1e-6, d[:,3], numpy.nan)
-    xmax = d[:,0]
-    jmax = numpy.where(d[:,1]>0)[0].max()
-    print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,3]))
-    print('Loaded hmax from ',fname)
-except:
-    xmax = None
-    print("Failed to load fort.hmax")
-
 xlimits = [0,64e3]
 
 
@@ -52,6 +40,18 @@ def setplot(plotdata):
     if outdir2:
         mapc2p2, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir2,'celledges.txt'))
 
+
+    try:
+        fname = os.path.join(plotdata.outdir, 'fgmax.txt')
+        d = numpy.loadtxt(fname)
+        etamax = numpy.where(d[:,1]>1e-6, d[:,3], numpy.nan)
+        xmax = d[:,0]
+        jmax = numpy.where(d[:,1]>0)[0].max()
+        print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,3]))
+        print('Loaded hmax from ',fname)
+    except:
+        xmax = None
+        print("Failed to load hmax from ",fname)
 
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid,tight_layout
