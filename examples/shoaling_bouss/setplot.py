@@ -17,7 +17,7 @@ xlimits = [0,64e3]
 
 
 outdir2 = None
-outdir2 = os.path.abspath('_output_1')
+outdir2 = os.path.abspath('_output_6')
 #outdir2 = os.path.abspath('_output_mx5000_aneg')
 
 def setplot(plotdata):
@@ -227,7 +227,7 @@ def setplot(plotdata):
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = [50e3,65e3]
-    plotaxes.ylimits = [-20,45]
+    plotaxes.ylimits = [-20,50]
     plotaxes.title = 'Comparison'
 
     plotaxes.afteraxes = fixticks1

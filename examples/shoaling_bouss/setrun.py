@@ -144,8 +144,8 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 10
-        clawdata.total_steps = 100
+        clawdata.output_step_interval = 100
+        clawdata.total_steps = 2000
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
