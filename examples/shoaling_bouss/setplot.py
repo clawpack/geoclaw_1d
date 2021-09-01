@@ -17,7 +17,7 @@ xlimits = [0,64e3]
 
 
 outdir2 = None
-#outdir2 = os.path.abspath('_output_mx12000_partial')
+outdir2 = os.path.abspath('_output_1')
 #outdir2 = os.path.abspath('_output_mx5000_aneg')
 
 def setplot(plotdata):
@@ -26,6 +26,9 @@ def setplot(plotdata):
 
     outdir1 = plotdata.outdir
     mapc2p1, mx_edge, xp_edge = make_mapc2p(os.path.join(outdir1,'celledges.txt'))
+
+    if outdir2:
+        print('Plotting from %s, comparing to %s' % (outdir1,outdir2))
     
     from clawpack.amrclaw.data import GaugeData 
     setgauges = GaugeData() 
@@ -213,6 +216,41 @@ def setplot(plotdata):
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
+
+
+    #----------
+
+    plotfigure = plotdata.new_plotfigure(name='compare', figno=2)
+    plotfigure.kwargs = {'figsize':(10,5)}
+    plotfigure.show = (outdir2 is not None)
+    
+
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = [50e3,65e3]
+    plotaxes.ylimits = [-20,45]
+    plotaxes.title = 'Comparison'
+
+    plotaxes.afteraxes = fixticks1
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = geoplot.surface
+    plotitem.color = 'b'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.outdir = outdir2
+    plotitem.plot_var = geoplot.surface
+    plotitem.color = 'm'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    #plotitem.show = False
+    plotitem.plot_var = geoplot.topo
+    plotitem.color = 'g'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
 
 
     #-----------------------------------------
