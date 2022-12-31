@@ -103,8 +103,9 @@ def make_celledges_cfl(xlower, xupper, mx, topo_fcn, hmin,
         fill_between(xp,where(z<0,z,nan),0.,color=[.5,.5,1])
         plot(xp,z,'g')
         xlim(xlower,xupper)
-        zmargin = 0.1*(z.max()-z.min())
-        ylim(z.min()-zmargin,z.max()+zmargin)
+        zmax = max(z.max(), 0)
+        zmargin = 0.1*(zmax-z.min())
+        ylim(z.min()-zmargin,zmax+zmargin)
         grid(True)
         title('Topography')
         png_fname = 'topo.png'
