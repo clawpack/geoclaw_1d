@@ -50,7 +50,7 @@ To use::
     python plot_gauges.py  # to create a plot of gauges to compare to paper
 
 The `plot_gauges.py` script should create a plot 
-`Gauges.png <Gauges.png>`__ 
+`GaugesFigure5.png <Gauges.png>`__ 
 that can be compared to 
 `Figure 5 <MatsuyamaFigure5.png>`__ 
 in the paper.

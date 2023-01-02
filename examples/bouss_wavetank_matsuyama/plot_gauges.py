@@ -40,16 +40,17 @@ for info in gauge_info:
     ylim(-5, 15)
     xlim(xlimits)
     grid(True)
+    yticks([-5,0,5,10,15])
     xlabel('')
     #ylabel('Surface (m)')
     #title('Gauge %i' % gaugeno)
 
     legend(loc='upper right')
 
-    tight_layout()
+tight_layout()
 
-    if 0:
-        fname = 'Gauges.png'
-        savefig(fname, bbox_inches='tight')
-        print('Created %s' % fname)
+if 1:
+    fname = 'GaugesFigure5.png'
+    savefig(fname, bbox_inches='tight')
+    print('Created %s' % fname)
 
