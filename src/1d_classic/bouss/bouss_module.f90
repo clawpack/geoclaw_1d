@@ -1,4 +1,4 @@
-h(i)**2module bouss_module
+module bouss_module
     
     implicit none
     logical      :: bouss  ! Turn on the dispersive terms
