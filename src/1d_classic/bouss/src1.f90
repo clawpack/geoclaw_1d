@@ -117,12 +117,12 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
           ! modify solution psi for source term of SGN:
           do i=1,mx
               etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
-              psi(i+1) = grav/alpha * q(1,i)*etax - psi(i+1)
+              psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
            enddo
         endif
               
-        ! Forward Euler update:
-        ! Note component 1 of psi used for BC, so psi(2) updates q(:,1):
+        ! Forward Euler update to momentum q(2,:):
+        ! Note psi(1) used for BC, so psi(i+1) updates q(2,i):
         q0(2,1:mx) = q0(2,1:mx) + delt*psi(2:mx+1)
           
 
@@ -144,12 +144,12 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
                 do i=1,mx
                     ! note that h,eta were not changed by first stage
                     etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
-                    psi(i+1) = grav/alpha * q(1,i)*etax - psi(i+1)
+                    psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
                 enddo
             endif
               
             ! Second stage is midpoint method dt=delt*2:
-            ! Note component 1 of psi used for BC, so psi(2) updates q(:,1):
+            ! Note psi(1) used for BC, so psi(i+1) updates q(2,i):
             q(2,1:mx) = q(2,1:mx) + 2.d0*delt*psi(2:mx+1)
 
         endif ! rk_order == 2
