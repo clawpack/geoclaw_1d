@@ -119,9 +119,10 @@ contains
             c02(i) = -(cm2(i) + cp2(i))
             ! first derivative coefficients:
             denom = (dxm(i)*dxm(i+1)*(dxm(i)+dxm(i+1)))
-            cm1(i) = -dxm(i)**2 / denom
+            ! CORRECT??
+            cm1(i) = -dxm(i+1)**2 / denom
             c01(i) = (dxm(i+1)**2 - dxm(i)**2) / denom
-            cp1(i) = +dxm(i+1)**2 / denom
+            cp1(i) = +dxm(i)**2 / denom
         endif
         
         if (coordinate_system == 1) then
@@ -516,7 +517,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
           
           D(i+1) = 1.d0 + alpha*(-h(i)**2/3.d0 *c02r(i) &
                     -h(i)*hr(i)*(c01(i) + rinv(i)) &
-                    + 0.5d0*h(i)*(Brr - rinv(i)*Br(i)) + etar(i)*Br(i))
+                    + 0.5d0*h(i)*(Brr - rinv(i)*Br(i)) + etar(i)*Br(i)) !CORRECT??
           
           DU(i+1) = alpha*(-h(i)**2/3.d0 *cp2r(i) - h(i)*hr(i)*cp1(i))
 
@@ -621,7 +622,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         Brr = cm2(i)*B(i-1) + c02(i)*B(i) + cp2(i)*B(i+1)  ! pure 2nd deriv
         w(i) = u(i)**2 * Brr
         ur = cm1(i)*u(i-1) + c01(i)*u(i) + cp1(i)*u(i+1)
-        phi(i) = ur**2 + rinv(i)*ur*u(i) + (rinv(i)*ur)**2
+        phi(i) = ur**2 + rinv(i)*ur*u(i) + (rinv(i)*ur)**2  ! CORRECT??
     enddo        
     
 
