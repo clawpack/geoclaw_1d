@@ -28,7 +28,7 @@ contains
     ! Set things up for Boussinesq solver, in particular
     ! create and factor tridiagonal matrix for implicit solves.
 
-    use geoclaw_module, only: sea_level, coordinate_system
+    use geoclaw_module, only: earth_radius,deg2rad,coordinate_system,sea_level
     use grid_module, only: xcell, zcell, grid_type
     
     implicit none
@@ -98,7 +98,13 @@ contains
     ! coefficients needed for second-order derivatives:
 
     do i=0,mx+2
-        dxm(i) = xcell(i) - xcell(i-1)
+        if (coordinate_system .eq. 2) then
+            ! x is latitude, convert dx to meters:
+            dxm(i) = (xcell(i) - xcell(i-1)) * earth_radius * deg2rad
+        else
+            ! x is meters
+            dxm(i) = xcell(i) - xcell(i-1)
+        endif
     enddo
 
     do i=0,mx+1
@@ -142,8 +148,21 @@ contains
             ! first derivative coefficients for d/dr are unchanged 
             ! note: *not* including 1/r term in this derivative
         else if (coordinate_system == 2) then
-            write(6,*) '*** latitude coordinates not yet implemented in Bouss'
+            write(6,*) '*** latitude coordinates correctly implemented in Bouss??'
             stop
+            
+            ! PROBABLY NOT CORRECT -- r derivative??
+            ! x = latitude coordinate -90 < x < 90 degrees
+            ! r = sin(x) goes to zero at both poles
+            ! include factors for ((1/r)*(r*q)_r)_r 
+            ! using form q_{rr} + (1/r)q_r - (1/r**2)q
+            r = sin(deg2rad*xcell(i))
+            rinv(i) = 1.d0/r
+            cm2r(i) = cm2(i) - 1.d0/(r*dxc(i))
+            cp2r(i) = cp2(i) + 1.d0/(r*dxc(i))
+            c02r(i) = c02(i) - 1.d0/(r**2)
+            ! first derivative coefficients for d/dr are unchanged 
+            ! note: *not* including 1/r term in this derivative        
         endif
     enddo
 
