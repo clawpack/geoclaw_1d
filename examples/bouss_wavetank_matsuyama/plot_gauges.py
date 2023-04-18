@@ -5,7 +5,11 @@ Plot results at gauges to compare with Figure 5 of Matsuyama et al. (2007).
 from pylab import *
 import clawpack.pyclaw.gauges as gauges
 
+outdir = '_output1'  # MS B=1/15
 outdir = '_output'
+
+add_data = True
+
 
 figure(400, figsize=(14,8))
 clf()
@@ -48,8 +52,21 @@ for info in gauge_info:
 
 tight_layout()
 
+if add_data:
+    d = loadtxt('data_wavegauge.csv',skiprows=2,delimiter=',')
+    subplot(6,2,5)
+    plot(d[:,0],d[:,2],'r')
+    subplot(6,2,7)
+    plot(d[:,0],d[:,3],'r')
+    subplot(6,2,2)
+    plot(d[:,0],d[:,4],'r')
+    subplot(6,2,8)
+    plot(d[:,0],d[:,5],'r')
+    subplot(6,2,12)
+    plot(d[:,0],d[:,6],'r')
+
 if 1:
-    fname = 'Gauges.png'
+    fname = 'Gauges_SGNa_b06_data.png'
     savefig(fname, bbox_inches='tight')
     print('Created %s' % fname)
 

@@ -27,6 +27,8 @@ xlimits = [-160,40]
 
 fname_celledges = os.path.abspath('celledges.data')
 
+outdir2 = '_output1'
+
 def setplot(plotdata):
 
     plotdata.clearfigures()
@@ -38,6 +40,7 @@ def setplot(plotdata):
 
     outdir1 = plotdata.outdir
     mapc2p1, mx_edge, xp_edge = make_mapc2p(fname_celledges)
+
 
     def fixticks1(current_data):
         from pylab import ticklabel_format, grid,tight_layout
@@ -70,6 +73,15 @@ def setplot(plotdata):
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
+    if outdir2 is not None:
+        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+        plotitem.outdir = outdir2
+        plotitem.plot_var = geoplot.surface
+        plotitem.color = 'r'
+        #plotitem.plotstyle = '-+'
+        plotitem.MappedGrid = True
+        plotitem.mapc2p = mapc2p1
+
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     #plotitem.show = False
     plotitem.plot_var = geoplot.topo
@@ -91,6 +103,14 @@ def setplot(plotdata):
     plotitem.color = 'b'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
+
+    if outdir2 is not None:
+        plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+        plotitem.outdir = outdir2
+        plotitem.plot_var = geoplot.velocity
+        plotitem.color = 'r'
+        plotitem.MappedGrid = True
+        plotitem.mapc2p = mapc2p1
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(313)'
