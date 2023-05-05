@@ -18,7 +18,8 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     use geoclaw_module, only: earth_radius, coordinate_system
     use grid_module, only: mx_edge, xp_edge
     use bouss_module, only: bouss, ibouss, alpha, cm1, c01, cp1, &
-                      solve_tridiag_ms, build_tridiag_sgn, solve_tridiag_sgn
+                      solve_tridiag_ms, build_tridiag_sgn, &
+                      solve_tridiag_sgn, useBouss
 
 
     implicit none
@@ -116,8 +117,12 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
           call solve_tridiag_sgn(mx,meqn,mbc,dx,q0,maux,aux,psi)
           ! modify solution psi for source term of SGN:
           do i=1,mx
-              etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
-              psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
+              if (useBouss(i)) then
+                  etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
+                  psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
+              else
+                  psi(i+1) = 0.d0
+              endif
            enddo
         endif
               
@@ -143,8 +148,12 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
                 ! modify solution psi for source term of SGN:
                 do i=1,mx
                     ! note that h,eta were not changed by first stage
-                    etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
-                    psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
+                    if (useBouss(i)) then
+                        etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
+                        psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
+                    else
+                        psi(i+1) = 0.d0
+                    endif
                 enddo
             endif
               

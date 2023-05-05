@@ -11,6 +11,10 @@ module bouss_module
     real(kind=8), allocatable, dimension(:) :: rinv, dxm, dxc, cm2r, cp2r, c02r
     real(kind=8), allocatable, dimension(:) :: cm2, cp2, c02, cm1, cp1, c01
 
+    ! for initial water depth and switching to SWE:
+    real(kind=8) :: hmin
+    real(kind=8), allocatable, dimension(:) :: h0
+    logical, allocatable, dimension(:) :: useBouss
     
     ! for tridiagonal solver:
     integer, allocatable, dimension(:) :: IPIV
@@ -36,7 +40,7 @@ contains
     real(kind=8) :: DLi, r, denom
     integer :: i, iunit
     character*25 fname
-    real(kind=8), dimension(1-mbc:mx+mbc) :: h0, h02, h03
+    real(kind=8), dimension(1-mbc:mx+mbc) :: h02, h03
     integer(kind=4) :: INFO
 
     iunit = 7
@@ -50,6 +54,7 @@ contains
     read(7,*) B_param
     read(7,*) sw_depth0
     read(7,*) sw_depth1
+    write(6,*) '*** Ignoring sw_depth1'
     
     if (ibouss==2) alpha = B_param  ! parameter in SGN equations
     
@@ -58,6 +63,7 @@ contains
     allocate(cm2(0:mx+1),cp2(0:mx+1),c02(0:mx+1))
     allocate(cm2r(0:mx+1),cp2r(0:mx+1),c02r(0:mx+1))
     allocate(D(mx+2), DL(mx+1), DU(mx+2), DU2(mx+2), IPIV(mx+2))
+    allocate(h0(-1:mx+2), useBouss(-1:mx+2))
 
 
     ! Boundary conditions to impose in computing Boussinesq update:
@@ -166,7 +172,17 @@ contains
         endif
     enddo
 
+    ! initial depth and where to switch to SWE:
     
+    do i=1-mbc,mx+mbc
+        h0(i) = max(sea_level - zcell(i), 0.d0)
+    enddo
+    
+    do i=2-mbc,mx+mbc-1
+        hmin = min(h0(i-1), h0(i), h0(i+1))
+        useBouss(i) = (hmin > sw_depth0)
+        !write(6,*) '+++ useBouss: ',i,xcell(i),h0(i),useBouss(i)
+    enddo        
     !------------------------------------
     
     if (ibouss==1) then
@@ -202,7 +218,7 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
     !h0 = sea_level - aux(1,:)  # resting depth
 
     do i=1-mbc,mx+mbc
-        h0(i) = sea_level - zcell(i)
+        !h0(i) = sea_level - zcell(i) ! now set in set_bouss
   666   format(i3,3e16.6)
         h02(i)=(max(0.,h0(i)))**2
         h03(i)=(max(0.,h0(i)))**3
@@ -440,10 +456,10 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
         endif
 
 
-        if ((h0(i) > sw_depth0) .and. (h0(i) < sw_depth1)) then
-            ! reduce psi linearly between sw_depth0 and sw_depth1:
-            psi(k) = psi(k) * (h0(i)-sw_depth0)/(sw_depth1-sw_depth0)
-        endif
+        !if ((h0(i) > sw_depth0) .and. (h0(i) < sw_depth1)) then
+        !    ! reduce psi linearly between sw_depth0 and sw_depth1:
+        !    psi(k) = psi(k) * (h0(i)-sw_depth0)/(sw_depth1-sw_depth0)
+        !endif
             
     enddo
     
@@ -491,7 +507,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
     
     ! Locals
     integer :: i
-    real(kind=8) :: DLi, r, Brr, denom
+    real(kind=8) :: DLi, r, Brr, denom, hmin
     real(kind=8), dimension(1-mbc:mx+mbc) :: h, B, Br, hr
     real(kind=8), dimension(1-mbc:mx+mbc) :: etar, eta, phi, w
 
@@ -502,6 +518,14 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         B(i) = aux(1,i)  ! topo
         eta(i) = B(i) + h(i)
     enddo
+    
+    ! reset useBouss(:) if it should be based on h rather than h0 or slope, etc:
+    if (.false.) then
+        do i=2-mbc,mx+mbc-1
+            hmin = min(h(i-1), h(i), h(i+1))
+            useBouss(i) = (h(i) > sw_depth0)
+        enddo
+    endif
     
     do i=2-mbc,mx+mbc-1
         Br(i) = cm1(i)*B(i-1) + c01(i)*B(i) + cp1(i)*B(i+1)
@@ -523,7 +547,8 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         ! unless this is a cell where SWE are used, then leave as row of I
         ! and set RHS to 0, so no modification to SWE result.
         
-        if ((h(i) > sw_depth0)) then
+        !if ((h(i) > sw_depth0)) then
+        if (useBouss(i)) then
             
           ! Replace this row of identity matrix with dispersion terms
           ! Note that cm2r(i)*w(i-1) + c02r(i)*w(i) + cp2r(i)*w(i+1) gives
@@ -653,7 +678,8 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
        k = i+1  ! i'th equation corresponds to row k=i+1 of RHS
 
-       if (h(i) <= sw_depth0) then
+       !if (h(i) <= sw_depth0) then
+       if (.not. useBouss(i)) then
             ! no dispersive term:
             psi(k) = 0.d0
 
@@ -677,11 +703,11 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         endif
 
 
-        if ((h(i) > sw_depth0) .and. (h(i) < sw_depth1)) then
-            ! reduce psi linearly between sw_depth0 and sw_depth1:
-            psi(k) = psi(k) * (h(i)-sw_depth0)/(sw_depth1-sw_depth0)
-        endif
-            
+        !if ((h(i) > sw_depth0) .and. (h(i) < sw_depth1)) then
+        !    ! reduce psi linearly between sw_depth0 and sw_depth1:
+        !    psi(k) = psi(k) * (h(i)-sw_depth0)/(sw_depth1-sw_depth0)
+        !endif
+
     enddo
     
     if (.false.) then
