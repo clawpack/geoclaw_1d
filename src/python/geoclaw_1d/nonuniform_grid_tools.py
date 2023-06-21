@@ -112,3 +112,4 @@ def make_celledges_cfl(xlower, xupper, mx, topo_fcn, hmin,
         savefig(png_fname)
         print("Created ",png_fname)
 
+    return xp,z
