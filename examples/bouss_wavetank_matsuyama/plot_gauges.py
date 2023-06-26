@@ -5,7 +5,11 @@ Plot results at gauges to compare with Figure 5 of Matsuyama et al. (2007).
 from pylab import *
 import clawpack.pyclaw.gauges as gauges
 
+#outdir = '_output1'  # MS B=1/15
 outdir = '_output'
+
+add_data = True
+
 
 figure(400, figsize=(14,8))
 clf()
@@ -53,4 +57,3 @@ if 1:
     fname = 'GaugesFigure5.png'
     savefig(fname, bbox_inches='tight')
     print('Created %s' % fname)
-

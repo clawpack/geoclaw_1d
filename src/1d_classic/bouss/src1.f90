@@ -17,7 +17,9 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     use geoclaw_module, only: frictioncoeff => friction_coefficient
     use geoclaw_module, only: earth_radius, coordinate_system
     use grid_module, only: mx_edge, xp_edge
-    use bouss_module, only: bouss,solve_tridiag
+    use bouss_module, only: bouss, ibouss, alpha, cm1, c01, cp1, &
+                      solve_tridiag_ms, build_tridiag_sgn, &
+                      solve_tridiag_sgn, useBouss
 
 
     implicit none
@@ -27,9 +29,10 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     real(kind=8), intent(inout) ::  q(meqn,1-mbc:mx+mbc)
 
     ! Locals
-    real(kind=8) :: gamma, rcell, u, xcell, tanxR
+    real(kind=8) :: eta(0:mx+1)
+    real(kind=8) :: gamma, rcell, u, xcell, tanxR, etax
     real(kind=8) :: rk_stage(1:mx,4), delt
-    integer ::  i,k,ii,nstep,rk_order
+    integer ::  i,k,ii,rk_order
     real(kind=8)  q0(meqn,1-mbc:mx+mbc)
     real(kind=8) psi(mx+2)
 
@@ -83,61 +86,84 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
     ! -------------------------------------------------
     if (bouss) then
-
+        
         ! Boussinesq terms 
 
-        nstep = 1  ! set > 1 to do subcycling with source term 
-        delt = dt / nstep
-
         rk_order = 1  ! 1 for Forward Euler, 2 for second-order RK
+        delt = dt / rk_order
 
-        do ii=1,nstep
-
-          rk_stage = 0.d0
-          q0  = q
-
-          !-----------------------
-          if (rk_order == 1) then
-              ! Forward Euler
-
-              call solve_tridiag(mx,meqn,mbc,dx,q0,maux,aux,psi)
-              
-              ! Forward Euler update:
-              ! Note component 1 of psi used for BC, so psi(2) updates q(:,1):
-              q(2,1:mx) = q(2,1:mx) + delt*psi(2:mx+1)
-              
-          endif  ! rk_order == 1
+        if (ibouss == 2) then
+            ! for SGN, need to factor matrix each step
+            call build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
+        endif
+                
+        q0  = q
           
-          !-----------------------
-          if (rk_order == 2) then
-          
-              ! Second-order explicit R-K
-              ! First Stage
-
-              call solve_tridiag(mx,meqn,mbc,dx,q0,maux,aux,psi)
-
-
-              rk_stage(1:mx,1) = psi(2:mx+1)
-
-              q0(2,1:mx)=q(2,1:mx) + delt/2.d0*rk_stage(1:mx,1)
-
-              ! Second Stage
-
-              call solve_tridiag(mx,meqn,mbc,dx,q0,maux,aux,psi)
-
-              rk_stage(1:mx,2)=psi(2:mx+1)
-
-              q(2,1:mx) = q(2,1:mx) + delt*rk_stage(1:mx,2)
-
-          endif ! rk_order == 2
-
+        do i=0,mx+1
+           if (q(1,i) > dry_tolerance) then
+               eta(i) = q(1,i)+aux(1,i)
+           else
+               eta(i) = 0.d0
+           endif
         enddo
 
-    endif ! end of Bouss terms
-  
+        !-----------------------
+        ! First stage (only stage for rk_order == 1):
+        
+        if (ibouss == 1) then
+          call solve_tridiag_ms(mx,meqn,mbc,dx,q0,maux,aux,psi)
+          ! returns solution psi = source term for Madsen
+        else if (ibouss == 2) then
+          call solve_tridiag_sgn(mx,meqn,mbc,dx,q0,maux,aux,psi)
+          ! modify solution psi for source term of SGN:
+          do i=1,mx
+              if (useBouss(i)) then
+                  etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
+                  psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
+              else
+                  psi(i+1) = 0.d0
+              endif
+           enddo
+        endif
+              
+        ! Forward Euler update to momentum q(2,:):
+        ! Note psi(1) used for BC, so psi(i+1) updates q(2,i):
+        q0(2,1:mx) = q0(2,1:mx) + delt*psi(2:mx+1)
+          
 
+        !-----------------------
+        if (rk_order == 1) then
+            q = q0 ! and we are done
+              
+        else if (rk_order == 2) then
+
+            ! Second stage for 2-stage R-K, solve for psi at midpoint
+            ! in time based on q0 computed in first stage:
+            
+            if (ibouss == 1) then
+                call solve_tridiag_ms(mx,meqn,mbc,dx,q0,maux,aux,psi)
+                ! returns solution psi = source term for Madsen
+            else if (ibouss == 2) then
+                call solve_tridiag_sgn(mx,meqn,mbc,dx,q0,maux,aux,psi)
+                ! modify solution psi for source term of SGN:
+                do i=1,mx
+                    ! note that h,eta were not changed by first stage
+                    if (useBouss(i)) then
+                        etax = cm1(i)*eta(i-1) + c01(i)*eta(i) + cp1(i)*eta(i+1)
+                        psi(i+1) = q(1,i) * (grav/alpha * etax - psi(i+1))
+                    else
+                        psi(i+1) = 0.d0
+                    endif
+                enddo
+            endif
+              
+            ! Second stage is midpoint method dt=delt*2:
+            ! Note psi(1) used for BC, so psi(i+1) updates q(2,i):
+            q(2,1:mx) = q(2,1:mx) + 2.d0*delt*psi(2:mx+1)
+
+        endif ! rk_order == 2
+
+    endif ! end of Bouss terms
 
 
 end subroutine src1
-
-
