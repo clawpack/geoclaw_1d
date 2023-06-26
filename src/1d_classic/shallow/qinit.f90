@@ -26,7 +26,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     do i=1,mx
       eta = sea_level
-      q(1,i) = max(sea_level, eta - aux(1,i))
+      q(1,i) = max(0.d0, eta - aux(1,i))
       q(2,i) = 0.d0
    enddo
 
