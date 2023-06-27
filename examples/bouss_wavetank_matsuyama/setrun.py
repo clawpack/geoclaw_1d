@@ -95,8 +95,8 @@ def setrun(claw_pkg='geoclaw'):
         #rundata.bouss_data.B_param = 1.  # alpha
         rundata.bouss_data.B_param = 1.153  # alpha
 
-    rundata.bouss_data.sw_depth0 = 0.06  #0.005
-    rundata.bouss_data.sw_depth1 = 0.06  #0.005
+    rundata.bouss_data.sw_depth0 = 0.06  # depth to switch to SWE
+    #rundata.bouss_data.sw_depth1 = 0.06  # sw_depth1 currently unused
 
     # ---------------
     # Size of system:
