@@ -58,7 +58,7 @@ contains
     
     if (ibouss==2) alpha = B_param  ! parameter in SGN equations
     
-    allocate(rinv(0:mx+1),dxm(0:mx+1),dxc(0:mx+1))
+    allocate(rinv(0:mx+1),dxm(0:mx+2),dxc(0:mx+1))
     allocate(cm1(0:mx+1),cp1(0:mx+1),c01(0:mx+1))
     allocate(cm2(0:mx+1),cp2(0:mx+1),c02(0:mx+1))
     allocate(cm2r(0:mx+1),cp2r(0:mx+1),c02r(0:mx+1))
@@ -212,7 +212,7 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
     
     integer :: i
     real(kind=8) :: DLi, r
-    real(kind=8), dimension(1-mbc:mx+mbc) :: h0, h02, h03
+    real(kind=8), dimension(1-mbc:mx+mbc) :: h02, h03
     integer(kind=4) :: INFO
     
     !h0 = sea_level - aux(1,:)  # resting depth
@@ -255,6 +255,8 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
           DL(i)= -cm2r(i)*((B_param+.5d0)*h02(i) &
                 - 1.d0/6.d0*h03(i)/h0(i-1))
 
+        !else
+        !  write(66,*) 'i, h0(i): ',i,h0(i)
         endif
         
     enddo
