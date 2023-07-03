@@ -86,8 +86,8 @@ def setrun(claw_pkg='geoclaw'):
     rundata.add_data(BoussData1D(),'bouss_data')
     rundata.bouss_data.bouss = True
     rundata.bouss_data.B_param = 1./15.
-    rundata.bouss_data.sw_depth0 = 0.
-    rundata.bouss_data.sw_depth1 = 0.
+    rundata.bouss_data.sw_depth0 = 5.
+    rundata.bouss_data.sw_depth1 = 5.
 
     # ---------------
     # Size of system:
@@ -144,8 +144,8 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 100
-        clawdata.total_steps = 2000
+        clawdata.output_step_interval = 1
+        clawdata.total_steps = 20
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 

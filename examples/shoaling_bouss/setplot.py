@@ -17,7 +17,7 @@ xlimits = [0,64e3]
 
 
 outdir2 = None
-outdir2 = os.path.abspath('_output_6')
+#outdir2 = os.path.abspath('_output_6')
 #outdir2 = os.path.abspath('_output_mx5000_aneg')
 
 def setplot(plotdata):

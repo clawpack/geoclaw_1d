@@ -25,7 +25,7 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS =  -llapack -lblas -g
+FFLAGS =  -llapack -lblas
 #FFLAGS ?=
 
 # ---------------------------------
@@ -50,11 +50,9 @@ EXCLUDE_SOURCES = \
 # ----------------------------------------
 
 MODULES = \
-  bouss_module.f90
 
 SOURCES = \
   qinit.f90 \
-  claw1ez.f \
 
 
 #-------------------------------------------------------------------
