@@ -25,8 +25,8 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS =  -llapack -lblas -g
-#FFLAGS ?=
+#FFLAGS ?=  -llapack -lblas
+FFLAGS =  -llapack -lblas -g -Wall -fbounds-check -ffpe-trap=invalid,overflow,zero
 
 # ---------------------------------
 # package sources for this program:
@@ -54,6 +54,7 @@ MODULES = \
 SOURCES = \
   qinit.f90 \
   setprob.f90 \
+  geoclaw_riemann_utils.f \
 
 
 #-------------------------------------------------------------------

@@ -12,26 +12,31 @@ from clawpack.clawutil.data import ClawData
 import numpy
 
 
-try:
-    fname = '_output/fgmax.txt'
-    d = numpy.loadtxt(fname)
-    etamax = numpy.where(d[:,1]>1e-6, d[:,3], numpy.nan)
-    xmax = d[:,0]
-    jmax = numpy.where(d[:,1]>0)[0].max()
-    print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,3]))
-    print('Loaded hmax from ',fname)
-except:
+if 0:
+    try:
+        fname = '_output/fgmax.txt'
+        d = numpy.loadtxt(fname)
+        etamax = numpy.where(d[:,1]>1e-6, d[:,3], numpy.nan)
+        xmax = d[:,0]
+        jmax = numpy.where(d[:,1]>0)[0].max()
+        print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,3]))
+        print('Loaded hmax from ',fname)
+    except:
+        xmax = None
+        print("Failed to load fort.hmax")
+else:
     xmax = None
-    print("Failed to load fort.hmax")
 
 xlimits = [-14,8.19]
 
 
-#outdir2 = None
+outdir2 = None
 
-outdir2 = os.path.abspath('_output_swe')
-if not os.path.isdir(outdir2):
-    outdir2 = None
+#outdir2 = os.path.abspath('_output_swe')
+
+if outdir2:
+    if not os.path.isdir(outdir2):
+        outdir2 = None
 
 def setplot(plotdata):
 

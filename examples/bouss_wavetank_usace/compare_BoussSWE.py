@@ -1,6 +1,6 @@
 """
-Run GeoClaw with both Bouss terms and pure shallow water equations,
-and then plot gauge results compared to experiment.
+Run GeoClaw with pure shallow water equations and with several choices
+of Boussinesq equations, and then plot gauge results compared to experiment.
 
 """
 from pylab import *
@@ -13,23 +13,35 @@ import compare_gauges
 
 import setrun
 
-outdir_bouss = '_output_bouss'
-print('outdir_bouss = ',outdir_bouss)
+outdir_sgn = '_output_sgn'
+print('outdir_bouss = ',outdir_sgn)
+
+outdir_ms = '_output_ms'
+print('outdir_ms = ',outdir_ms)
 
 outdir_swe = '_output_swe'
 print('outdir_swe = ',outdir_swe)
 
-run_code = False # set to False if output already exists
+run_code = False  # set to False if output already exists
 
 if run_code:
     # create executable and .data files:
     os.system('make .exe')
     rundata = setrun.setrun()
 
-    # Boussinesq:
+    # Boussinesq, MS:
     rundata.bouss_data.bouss = True
+    rundata.bouss_data.ibouss = 1
+    rundata.bouss_data.B_param = 1./15.
     rundata.write()
-    runclaw(xclawcmd='xgeo',outdir=outdir_bouss)   # run clawpack code
+    runclaw(xclawcmd='xgeo',outdir=outdir_ms)   # run clawpack code
+
+    # Boussinesq, SGN:
+    rundata.bouss_data.bouss = True
+    rundata.bouss_data.ibouss = 2
+    rundata.bouss_data.B_param = 1.153
+    rundata.write()
+    runclaw(xclawcmd='xgeo',outdir=outdir_sgn)   # run clawpack code
     
     # Shallow water equations:
     rundata.bouss_data.bouss = False
@@ -37,7 +49,7 @@ if run_code:
     runclaw(xclawcmd='xgeo',outdir=outdir_swe)   # run clawpack code
     
 
-savefig_ext = '.png'
+savefig_ext = '.pdf'
 figdir = './figures'
 os.system('mkdir -p %s' % figdir)
 
@@ -47,5 +59,8 @@ def save_figure(fname):
     savefig(full_fname, bbox_inches='tight')
     print('Created %s' % full_fname)
 
-compare_gauges.plot_gauges(outdir_bouss, outdir_swe,
-                           'GaugeComparison_BoussSWE.png')
+outdirs=[('_output_swe', 'SWE', 'k'), \
+         ('_output_ms', 'MS, B = 1/15', 'b'), \
+         ('_output_sgn', 'SGN, alpha = 1.153','g')]
+
+compare_gauges.plot_gauges(outdirs, fname_figure='GaugeComparison_BoussSWE.png')
