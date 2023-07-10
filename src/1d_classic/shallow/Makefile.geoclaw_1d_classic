@@ -3,6 +3,7 @@ GEOLIB:=$(CLAW)/geoclaw_1d/src/1d_classic/shallow
 
 #list of common sources:
 COMMON_MODULES += \
+  $(GEOLIB)/claw_module.f90 \
   $(GEOLIB)/utility_module.f90 \
   $(GEOLIB)/geoclaw_module.f90 \
   $(GEOLIB)/gauges_module.f90 \

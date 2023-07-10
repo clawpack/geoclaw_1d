@@ -12,11 +12,82 @@ First pass at 1d version of dtopotools
 import os,sys
 import numpy
 
+# eventually merge this code into geoclaw.dtopotools, but for now:
+#from clawpack.geoclaw import dtopotools as dtopotools2d 
+from clawpack.geoclaw.dtopotools import Fault, SubFault
+
+from clawpack.geoclaw.data import DEG2RAD, LAT2METER
 
 # ==============================================================================
 #  DTopography Base Class for 1-dimensional dtopo
 # ==============================================================================
 
+class Fault1d(Fault):
+    
+    r"""Base Fault1d class
+
+    A class describing a 1d fault possibly composed of subfaults.
+
+    """
+
+    def __init__(self, subfaults=None, input_units={},
+                 coordinate_specification=None):
+        r"""Fault initialization routine.
+        
+        See :class:`Fault` for more info.
+
+        """
+        
+        super(Fault1d, self).__init__()
+        
+
+class SubFault1d(SubFault):
+    
+    #@property
+    #def longitude(self):
+    #    return self.x0 / LAT2METER  # assuming latitude=0
+    
+    @property
+    def x0(self):
+        return self.longitude * LAT2METER  # assuming latitude=0
+
+    def __init__(self, strike=0, length=1000e3):
+        r"""SubFault initialization routine.
+        
+        See :class:`SubFault` for more info.
+
+        """
+        
+        super(SubFault1d, self).__init__()
+        
+
+        self.longitude = None  
+        r"""longitude at location specified by coordinate_specification """
+        
+        #self.x0 = None  
+        r"""x in meters at location specified by coordinate_specification """
+                
+        self.coordinate_specification = 'top'
+        r"""location of x0: top, centroid, or bottom"""
+        
+        self.length = length
+        r"""length (m) in strike direction orthogonal to x"""
+
+        self.latitude = 0.
+        r"""latitude where placed on sphere to use 2d routines""" 
+        
+        self.rake = 90.
+        r"""rake=90 ==> top at right if strike=0, at left if strike=180"""
+        
+        if strike not in [0, 180]:
+            msg = "strike should be 0 for top at right or 180 for top at left\n"
+            msg = msg + "    strike = %s not allowed in 1d" % strike
+            raise InputError(msg)
+            
+        self.strike = strike
+        r"""rake=90, so top at right if strike=0, at left if strike=180"""
+        
+        
 class DTopography1d(object):
     r"""Basic object representing moving topography in 1d
 
@@ -149,6 +220,22 @@ class DTopography1d(object):
 
 
     def dZ_at_t(self, t):
+        """
+        Interpolate dZ to specified time t and return deformation.
+        """
+        if t <= self.times[0]:
+            return self.dZ[0,:]
+        elif t >= self.times[-1]:
+            return self.dZ[-1,:]
+        else:
+            n = max(numpy.where(self.times <= t)[0])
+            t1 = self.times[n]
+            t2 = self.times[n+1]
+            dz = (t2-t)/(t2-t1) * self.dZ[n,:] + \
+                 (t-t1)/(t2-t1) * self.dZ[n+1,:]
+            return dz
+
+    def dZ_cellave_at_t(self, t, celledges):
         """
         Interpolate dZ to specified time t and return deformation.
         """

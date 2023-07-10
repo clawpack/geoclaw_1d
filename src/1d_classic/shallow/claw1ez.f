@@ -12,6 +12,7 @@ c
 c     ! Modified for GeoClaw 1d shallow water
 c
 
+      use claw_module, only: t0,tfinal
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
@@ -19,7 +20,7 @@ c
       use grid_module, only: monitor_runup,iunit_runup,runup_tolerance
       use grid_module, only: monitor_fgmax,iunit_fgmax
       use grid_module, only: hmax, smax, xcell
-      use topo_module, only: read_topo_settings
+      use topo_module, only: read_topo_settings, read_dtopo_settings
 
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
@@ -189,6 +190,7 @@ c     # set gauges and geoclaw specific quantities:
       call set_geo()
       call set_grid(mx,dx)
       call read_topo_settings()
+      call read_dtopo_settings()
 c
 c     # call user's routine setprob to set any specific parameters
 c     # or other initialization required.

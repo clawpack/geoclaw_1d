@@ -8,7 +8,7 @@ module grid_module
     logical :: mapped_grid
 
     real(kind=8), allocatable, dimension(:) :: xcell, xc_edge, xp_edge
-    real(kind=8), allocatable, dimension(:) :: zcell, z_edge
+    real(kind=8), allocatable, dimension(:) :: zcell, z_edge, dz_cell
 
     integer :: mx_edge
 
@@ -50,7 +50,7 @@ subroutine set_grid(mx,dx)
     read(iunit,*) grid_type
         ! grid_type == 0: uniform grid
         ! grid_type == 1: mapc2p.f90 used for mapping
-        ! grid_type == 2: celledges.txt file gives edges
+        ! grid_type == 2: celledges file gives x and z at edges
 
     if (grid_type == 2) then
         read(iunit,*) fname_celledges
@@ -71,6 +71,7 @@ subroutine set_grid(mx,dx)
         allocate(z_edge(1-mbc:mx_edge+mbc))
         allocate(xcell(1-mbc:mx+mbc))
         allocate(zcell(1-mbc:mx+mbc))
+        allocate(dz_cell(1-mbc:mx+mbc))  ! may be needed for dtopo
 
 
         do i=1,mx_edge
@@ -107,6 +108,7 @@ subroutine set_grid(mx,dx)
         ! read in xc values and corresponding xp and z values
         do i=1,mx_edge
             read(iunit,*) xp_edge(i),z_edge(i)
+            z_edge(i) = 1e9  ! should not matter
         enddo
     endif
 
