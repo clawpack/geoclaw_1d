@@ -92,11 +92,11 @@ def setrun(claw_pkg='geoclaw'):
     from clawpack.geoclaw_1d.data import BoussData1D
     rundata.add_data(BoussData1D(),'bouss_data')
     rundata.bouss_data.bouss = True
-    if 0:
+    if 1:
         # SGN
         rundata.bouss_data.ibouss = 2
-        rundata.bouss_data.B_param = 1.  # alpha
-        #rundata.bouss_data.B_param = 1.153  # alpha
+        #rundata.bouss_data.B_param = 1.  # alpha
+        rundata.bouss_data.B_param = 1.153  # alpha
     else:
         # Madsen-Sorensen
         rundata.bouss_data.ibouss = 1

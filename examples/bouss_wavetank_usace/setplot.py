@@ -31,8 +31,7 @@ xlimits = [-14,8.19]
 
 
 outdir2 = None
-
-#outdir2 = os.path.abspath('_output_swe')
+#outdir2 = os.path.abspath('_output_ms')
 
 if outdir2:
     if not os.path.isdir(outdir2):
@@ -98,7 +97,7 @@ def setplot(plotdata):
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.outdir = outdir2
         plotitem.plot_var = geoplot.surface
-        plotitem.color = 'k'
+        plotitem.plotstyle = 'r--'
         plotitem.MappedGrid = True
         plotitem.mapc2p = mapc2p2
 
@@ -128,7 +127,7 @@ def setplot(plotdata):
         plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
         plotitem.outdir = outdir2
         plotitem.plot_var = geoplot.velocity
-        plotitem.color = 'k'
+        plotitem.plotstyle = 'r--'
         plotitem.MappedGrid = True
         plotitem.mapc2p = mapc2p2
 

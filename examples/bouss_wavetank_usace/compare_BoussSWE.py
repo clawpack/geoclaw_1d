@@ -22,7 +22,7 @@ print('outdir_ms = ',outdir_ms)
 outdir_swe = '_output_swe'
 print('outdir_swe = ',outdir_swe)
 
-run_code = False  # set to False if output already exists
+run_code = True  # set to False if output already exists
 
 if run_code:
     # create executable and .data files:
