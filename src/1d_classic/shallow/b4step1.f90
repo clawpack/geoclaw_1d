@@ -7,7 +7,7 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
 
     use geoclaw_module, only: dry_tolerance
     use geoclaw_module, only: DEG2RAD, earth_radius, coordinate_system, pi
-    use grid_module, only: xp_edge, z_edge
+    use grid_module, only: xp_edge
     use grid_module, only: monitor_fgmax, hmax, smax
     use grid_module, only: monitor_total_zeta, iunit_total_zeta_mass
     use grid_module, only: monitor_runup, iunit_runup, runup_tolerance

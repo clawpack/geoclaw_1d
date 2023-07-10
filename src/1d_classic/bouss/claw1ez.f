@@ -12,6 +12,7 @@ c
 c     ! Modified for Boussinesq version
 c
 
+      use claw_module, only: t0,tfinal
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
@@ -19,7 +20,7 @@ c
       use grid_module, only: monitor_runup,iunit_runup,runup_tolerance
       use grid_module, only: monitor_fgmax,iunit_fgmax
       use grid_module, only: hmax, smax, xcell
-      use topo_module, only: read_topo_settings
+      use topo_module, only: read_topo_settings, read_dtopo_settings
       use bouss_module, only: set_bouss
 
       implicit double precision (a-h,o-z)
@@ -190,6 +191,7 @@ c     # set gauges and geoclaw specific quantities:
       call set_geo()
       call set_grid(mx,dx)
       call read_topo_settings()
+      call read_dtopo_settings()
 
       ! read in Boussinesq solver parameters:
       call set_bouss(mx,mbc,mthbc)

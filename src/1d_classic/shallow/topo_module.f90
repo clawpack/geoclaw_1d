@@ -61,10 +61,11 @@ contains
 !   ============================================================
     subroutine read_topo_file(fname)
 
+    use grid_module, only: mbc,mx,zcell
     implicit none
 
     character(len=150), intent(in) :: fname
-    integer :: i
+    integer :: i,ibc
     integer, parameter :: iunit = 7
 
     open(unit=iunit, file=trim(fname), status='unknown',form='formatted')
@@ -79,79 +80,20 @@ contains
         read(iunit,*) xtopo(i), ztopo(i)
     enddo
     close(iunit)
+    
+    write(6,*) '+++ call cell_average...'
+    ! compute zcell by cell-averaging pw linear function
+    ! defined by xtopo,ztopo:
+    call cell_average(mx_topo, xtopo, ztopo, zcell)
+    
+    ! extrapolate to ghost cells:
+    do ibc=1,mbc
+        zcell(1-ibc) = zcell(1)
+        zcell(mx+ibc) = zcell(mx)
+    enddo
 
     end subroutine read_topo_file
 
-!   ============================================================
-    subroutine topo_integrate(mx,mbc,maux,aux)
-
-    use grid_module, only: xp_edge,z_edge,mx_edge
-    implicit none
-
-    integer, intent(in) :: mx, mbc, maux
-    real(kind=8), intent(inout) ::  aux(maux,1-mbc:mx+mbc)
-
-    integer :: i,itopo1,itopo2,ifull
-    real(kind=8) :: x1,x2,topo_int,dx1,dx2,slope1
-
-    itopo1 = 1
-    do i=1,mx
-        ! edges of computational cell:
-        x1 = xp_edge(i)
-        x2 = xp_edge(i+1)
-
-        do while (xtopo(itopo1) <= x1)
-            itopo1 = itopo1 + 1
-        enddo
-        ! now itopo1 points to first topo point in cell
-
-        if (itopo1 == 1) then
-            write(6,*) '*** topo does not cover domain'
-            write(6,*) '*** x1, xtopo(1): ',x1,xtopo(1)
-            stop
-        endif
-
-        if (xtopo(itopo1) >= x2) then
-            ! xtopo(itopo1-1) to left of x1, so topo points bracket cell
-            slope1 = (ztopo(itopo1) - ztopo(itopo1-1)) &
-                   / (xtopo(itopo1) - xtopo(itopo1-1))
-            dx1 = (x1 - xtopo(itopo1-1))
-            dx2 = (x2 - xtopo(itopo1-1))
-            aux(1,i) = ztopo(itopo1-1) + 0.5d0*(dx1+dx2)*slope1
-
-        else
-            itopo2 = itopo1
-            do while (xtopo(itopo2) < x2)
-                itopo2 = itopo2 + 1
-            enddo
-            ! now itopo2 points to first topo point to right of cell
-    
-    
-            ! compute integral of pw linear topo function
-            ! start with portion between x1 and xtopo(itopo1):
-            dx1 = xtopo(itopo1) - x1
-            slope1 = (ztopo(itopo1) - ztopo(itopo1-1)) &
-                   / (xtopo(itopo1) - xtopo(itopo1-1))
-            topo_int = dx1 * (ztopo(itopo1) - 0.5d0*dx1*slope1)
-    
-            ! add in contributions from full topo intervals between x1,x2:
-            do ifull=itopo1+1,itopo2-1
-                dx1 = xtopo(ifull) - xtopo(ifull-1)
-                topo_int = topo_int + dx1*0.5d0*(ztopo(ifull-1)+ztopo(ifull))
-            enddo
-    
-            ! finish with portion between xtopo(itopo2-1) and x2:
-            dx1 = x2 - xtopo(itopo2-1)
-            slope1 = (ztopo(itopo2) - ztopo(itopo2-1)) &
-                   / (xtopo(itopo2) - xtopo(itopo2-1))
-            topo_int = topo_int + dx1 * (ztopo(itopo2-1) + 0.5d0*dx1*slope1)
-    
-            ! divide by width of computational cell to get cell average topo value:
-            aux(1,i) = topo_int / (x2 - x1)
-        endif
-    enddo
-
-    end subroutine topo_integrate
 
 !   ============================================================
     subroutine cell_average(mx_pwlin, x_pwlin, z_pwlin, z_cell)
@@ -160,7 +102,7 @@ contains
     ! a pw linear function, and return z_cell containing cell averages
     ! of this function, for the grid cells defined in grid_module.
 
-    use grid_module, only: xp_edge,z_edge,mx_edge
+    use grid_module, only: xp_edge,mx_edge
     implicit none
 
     integer, intent(in) :: mx_pwlin
@@ -193,7 +135,8 @@ contains
                    / (x_pwlin(i1) - x_pwlin(i1-1))
             dx1 = (x1 - x_pwlin(i1-1))
             dx2 = (x2 - x_pwlin(i1-1))
-            cell_int = z_pwlin(i1-1) + 0.5d0*(dx1+dx2)*slope1
+            z_cell(i) = z_pwlin(i1-1) + 0.5d0*(dx1+dx2)*slope1
+            !write(6,*) '+++ i, z_cell, z_pwlin: ',i,z_cell(i),z_pwlin(i)
 
         else
             i2 = i1
@@ -221,9 +164,10 @@ contains
             slope1 = (z_pwlin(i2) - z_pwlin(i2-1)) &
                    / (x_pwlin(i2) - x_pwlin(i2-1))
             cell_int = cell_int + dx1 * (z_pwlin(i2-1) + 0.5d0*dx1*slope1)
-    
+
             ! divide by width of computational cell to get cell average topo value:
             z_cell(i) = cell_int / (x2 - x1)
+            !write(6,*) '+++ i, z_cell, z_pwlin: ',i,z_cell(i),z_pwlin(i)
         endif
     enddo
 
@@ -380,4 +324,3 @@ contains
     end subroutine topo_update
 
 end module topo_module
-

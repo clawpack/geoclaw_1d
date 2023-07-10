@@ -12,7 +12,7 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
     !use geoclaw_module, only: grav  !uncomment if needed
     use geoclaw_module, only: earth_radius, coordinate_system, DEG2RAD
-    use grid_module, only: xp_edge,z_edge,mx_edge
+    use grid_module, only: xp_edge,zcell,mx_edge
     use topo_module, only: topo_integrate
 
     implicit none
@@ -22,7 +22,7 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
 
     !locals
     integer :: i,i0,i1,j
-    real(kind=8) :: xcell,zcell,a
+    real(kind=8) :: xcell,a
 
     if (mx+1 .ne. mx_edge) then
         write(6,*) 'mx_edge from grid.data must agree with mx+1'
@@ -32,9 +32,12 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
         endif
 
     ! compute topo values and store in aux(1,:):
-    call topo_integrate(mx,mbc,maux,aux)
+    !call topo_integrate(mx,mbc,maux,aux)
+    
 
     do i=1,mx
+        aux(1,i) = zcell(i)
+        !write(6,*) '+++ i,zcell: ',i,zcell(i)
         aux(2,i) = (xp_edge(i+1) - xp_edge(i))/dx
         if (coordinate_system == 2) then
             ! convert degrees to meters:

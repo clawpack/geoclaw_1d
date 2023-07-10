@@ -8,7 +8,7 @@ module grid_module
     logical :: mapped_grid
 
     real(kind=8), allocatable, dimension(:) :: xcell, xc_edge, xp_edge
-    real(kind=8), allocatable, dimension(:) :: zcell, z_edge, dz_cell
+    real(kind=8), allocatable, dimension(:) :: zcell, dz_cell
 
     integer :: mx_edge
 
@@ -68,7 +68,6 @@ subroutine set_grid(mx,dx)
 
         mx_edge = mx+1
         allocate(xp_edge(1-mbc:mx_edge+mbc))
-        allocate(z_edge(1-mbc:mx_edge+mbc))
         allocate(xcell(1-mbc:mx+mbc))
         allocate(zcell(1-mbc:mx+mbc))
         allocate(dz_cell(1-mbc:mx+mbc))  ! may be needed for dtopo
@@ -76,7 +75,6 @@ subroutine set_grid(mx,dx)
 
         do i=1,mx_edge
             xp_edge(i) = xlower + (i-1)*dx
-            !z_edge(i) = -4000.d0   ! NEED TO FIX FOR GENERAL TOPO
         enddo
 
     else if (grid_type == 1) then
@@ -100,15 +98,13 @@ subroutine set_grid(mx,dx)
     
         allocate(xc_edge(1-mbc:mx_edge+mbc))
         allocate(xp_edge(1-mbc:mx_edge+mbc))
-        allocate(z_edge(1-mbc:mx_edge+mbc))
         allocate(xcell(1-mbc:mx+mbc))
         allocate(zcell(1-mbc:mx+mbc))
     
         write(6,*) 'Reading grid with mx = ',mx
         ! read in xc values and corresponding xp and z values
         do i=1,mx_edge
-            read(iunit,*) xp_edge(i),z_edge(i)
-            z_edge(i) = 1e9  ! should not matter
+            read(iunit,*) xp_edge(i)
         enddo
     endif
 
@@ -125,15 +121,12 @@ subroutine set_grid(mx,dx)
     do mb=1,mbc
         xp_edge(1-mb) = 2.d0*xp_edge(2-mb) - xp_edge(3-mb)
         xp_edge(mx_edge+mb) = 2.d0*xp_edge(mx_edge+mb-1) - xp_edge(mx_edge+mb-2)
-        z_edge(1-mb) = z_edge(1)
-        z_edge(mx_edge+mb) = z_edge(mx_edge)
     enddo
 
 
     do i=1-mbc,mx+mbc
         ! cell centers based on grid edges:
         xcell(i) = 0.5d0*(xp_edge(i) + xp_edge(i+1))
-        zcell(i) = 0.5d0*(z_edge(i) + z_edge(i+1))
     enddo
 
     monitor_fgmax = .true.  ! add to setrun?
