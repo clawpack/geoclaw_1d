@@ -12,11 +12,16 @@ module topo_module
     real(kind=8), allocatable :: xtopo(:), ztopo(:)
     integer :: mx_topo, ntopofiles, test_topography
     real(kind=8) :: topo_missing
+    
+    ! for topo:
+    real(kind=8), allocatable, dimension(:) :: zcell, zcell0
+
 
     ! for dtopo:
     integer :: mt_dtopo, mx_dtopo
-    real(kind=8), allocatable :: x_dtopo(:),t_dtopo(:),dz_dtopo(:,:)
-
+    real(kind=8), allocatable, dimension(:)  :: x_dtopo, t_dtopo
+    real(kind=8), allocatable, dimension(:,:)  :: dz_dtopo, dz_cell
+    real(kind=8) :: dt_max_dtopo
     logical :: topo_finalized
 
 contains
@@ -61,7 +66,7 @@ contains
 !   ============================================================
     subroutine read_topo_file(fname)
 
-    use grid_module, only: mbc,mx,zcell
+    use grid_module, only: mbc,mx
     implicit none
 
     character(len=150), intent(in) :: fname
@@ -81,16 +86,21 @@ contains
     enddo
     close(iunit)
     
+    ! storage for cell averages of topo:
+    allocate(zcell(1-mbc:mx+mbc), zcell0(1-mbc:mx+mbc))
+
     write(6,*) '+++ call cell_average...'
     ! compute zcell by cell-averaging pw linear function
     ! defined by xtopo,ztopo:
-    call cell_average(mx_topo, xtopo, ztopo, zcell)
+    call cell_average(mx_topo, xtopo, ztopo, zcell(1:mx))
     
     ! extrapolate to ghost cells:
     do ibc=1,mbc
         zcell(1-ibc) = zcell(1)
         zcell(mx+ibc) = zcell(mx)
     enddo
+    
+    zcell0(:) = zcell(:)  ! save initial topo in case there is dtopo
 
     end subroutine read_topo_file
 
@@ -101,26 +111,28 @@ contains
     ! take arrays x_pwlin and z_pwlin with mx_pwlin points that define
     ! a pw linear function, and return z_cell containing cell averages
     ! of this function, for the grid cells defined in grid_module.
+    
+    ! Used to compute cell averages of topo or dtopo given nodal values.
 
-    use grid_module, only: xp_edge,mx_edge
+    use grid_module, only: xp_edge,mx_edge,mx
     implicit none
 
     integer, intent(in) :: mx_pwlin
     real(kind=8), dimension(1:mx_pwlin), intent(in) ::  x_pwlin, z_pwlin
-    real(kind=8), intent(out) ::  z_cell(-1:mx_edge+1)
+    real(kind=8), intent(out) ::  z_cell(1:mx)
 
     integer :: i,i1,i2,ifull
     real(kind=8) :: x1,x2,cell_int,dx1,dx2,slope1
 
-    i1 = 1
     do i=1,mx_edge-1
         ! edges of computational cell:
         x1 = xp_edge(i)
         x2 = xp_edge(i+1)
-
-        do while (x_pwlin(i1) <= x1)
-            i1 = i1 + 1
+        
+        do i1=1,mx_pwlin
+            if (x_pwlin(i1) > x1) exit
         enddo
+        
         ! now i1 points to first topo point in cell
 
         if (i1 == 1) then
@@ -139,11 +151,17 @@ contains
             !write(6,*) '+++ i, z_cell, z_pwlin: ',i,z_cell(i),z_pwlin(i)
 
         else
-            i2 = i1
-            do while (x_pwlin(i2) < x2)
-                i2 = i2 + 1
+
+            do i2=i1,mx_pwlin
+                if (x_pwlin(i2) >= x2) exit
             enddo
             ! now i2 points to first nodal point to right of cell
+            
+            if (i2 > mx_pwlin) then
+                write(6,*) '*** pwlin function does not cover domain'
+                write(6,*) '*** x2, x_pwlin(mx_pwlin): ',x2,x_pwlin(mx_pwlin)
+                stop
+            endif
     
     
             ! compute integral of pw linear function
@@ -196,9 +214,11 @@ contains
 
     if (ndtopofiles == 0) then
         topo_finalized = .true.
+        dt_max_dtopo = 999d9
 
     else if (ndtopofiles == 1) then
         read(iunit,*) dtopofname, dtopotype
+        read(iunit,*) dt_max_dtopo
         close(iunit)
         call read_dtopo_file(dtopofname,dtopotype)
         topo_finalized = .false.
@@ -206,6 +226,8 @@ contains
     else if (ndtopofiles > 1) then
         write(6,*) '*** Currently require at most 1 dtopofile'
         stop
+        
+    
 
     endif
 
@@ -216,13 +238,13 @@ contains
 !   ============================================================
     subroutine read_dtopo_file(fname,dtopotype)
 
-    use grid_module, only: dz_cell
+    use grid_module, only: mx,mbc
 
     implicit none
 
     integer, intent(in) :: dtopotype
     character(len=150), intent(in) :: fname
-    integer :: i, k, status, dtopo_size
+    integer :: i, k, status, dtopo_size, ibc
     integer, parameter :: iunit = 7
     real(kind=8) :: t0,tf,t,x,x1,x2,dt_dtopo
 
@@ -237,24 +259,31 @@ contains
         status = 0
         do while (status == 0)
             read(iunit,fmt=*,iostat=status) t,x
+            if (status .ne. 0) exit
             if (t == t0 ) then
                 mx_dtopo = mx_dtopo + 1
             endif
+            write(6,*) '+++ status, mx_dtopo,t,x: ',status,mx_dtopo,t,x
             dtopo_size = dtopo_size + 1
         end do
         write(6,*) '+++ mx_dtopo = ',mx_dtopo
         write(6,*) '+++ dtopo_size = ',dtopo_size
-        mt_dtopo = (dtopo_size-1)/mx_dtopo
+        mt_dtopo = dtopo_size/mx_dtopo
         write(6,*) '+++ mt_dtopo = ',mt_dtopo
         x2 = x
         tf = t
-        dt_dtopo = (tf-t0)/(mt_dtopo-1)
+        if (mt_dtopo > 1) then
+            dt_dtopo = (tf-t0)/(mt_dtopo-1)
+        else
+            dt_dtopo = 0.
+        endif
         write(6,*) '+++ dt_dtopo = ',dt_dtopo
-        close(iunit)
+        rewind(iunit)
         
 
         allocate(x_dtopo(mx_dtopo), dz_dtopo(mt_dtopo,mx_dtopo), &
                  t_dtopo(mt_dtopo))
+        allocate(dz_cell(mt_dtopo,1-mbc:mx+mbc))
 
         write(6,"('Reading ',i6,' dtopo values from ')") mx_dtopo
         write(6,*) '    ',trim(fname)
@@ -263,9 +292,19 @@ contains
             do i=1,mx_dtopo
                 read(iunit,*) t_dtopo(k), x_dtopo(i), dz_dtopo(k,i)
             enddo
-            ! x_dtopo, dz_dtopo defines a pw linear function,
+            
+            ! x_dtopo(:), dz_dtopo(k,:) defines a pw linear function,
             ! compute cell averages based on computational cells:
-            call cell_average(mx_dtopo, x_dtopo, dz_dtopo, dz_cell)
+            call cell_average(mx_dtopo, x_dtopo, dz_dtopo(k,:), &
+                              dz_cell(k,1:mx))
+                              
+            ! extrapolate to ghost cells:
+            do ibc=1,mbc
+                dz_cell(k,1-ibc) = dz_cell(k,1)
+                dz_cell(k,mx+ibc) = dz_cell(k,mx)
+            enddo
+    
+            write(6,*) '+++ dz_cell(1,200) = ',dz_cell(1,200)
         enddo
         close(iunit)
 
@@ -286,10 +325,14 @@ contains
     ! assumes dz_cell(1:mt_dtopo, 1-mbc:mx_grid+mbc) has been set
     ! to cell average of dz_dtopo on each grid cell at each dtopo time.
 
-    ! updates aux(1,:) to be (original zcell) + dz_cell at 
-    ! time interpolated from dtopo times.
+    ! updates zcell to be 
+    !    (original zcell0) + (dz_cell at time t)
+    ! interpolated from dtopo times.
+    
+    ! Note this differs from 2d, since here we update aux directly
+    ! rather than topo arrays.  Works ok here since no AMR.
 
-    use grid_module, only: zcell
+    use grid_module, only: mx,mbc
 
     implicit none
     
@@ -301,25 +344,37 @@ contains
     if ((mt_dtopo == 0) .or. topo_finalized) return
 
     if (mt_dtopo == 1) then
-        kd1 = 1
-        kd2 = 1
-        td1 = t
-        td2 = t
-        tau = 0.d0
+        if (t < t_dtopo(1)) then
+            zcell(:) = zcell0(:)
+        else
+            zcell(:) = zcell0(:) + dz_cell(1,:)
+        endif
     else
+        ! interpolate in time:
         do kd1=1,mt_dtopo
-            if (t >= t_dtopo(kd1)) exit
+            
+            write(6,*) '+++ checking kd1,t,t_dtopo(kd1) = ',kd1,t, t_dtopo(kd1)
+            if (t >= t_dtopo(kd1)) then
+                exit
+            else
+                write(6,*) 'no exit when t, t_dtopo(kd1) = ',t,t_dtopo(kd1)
+            endif
         enddo
+        write(6,*) '+++ mt_dtopo, kd1: ',mt_dtopo, kd1
         if (kd1 == mt_dtopo) then
+            ! done moving topo:
             topo_finalized = .true.
+            write(6,*) '+++ end of dtopo array'
             return
         endif
 
         kd2 = kd1+1
         tau = (t - t_dtopo(kd1)) / (t_dtopo(kd2) - t_dtopo(kd1))
+        write(6,*) '+++ updating topo with tau = ',tau
+        zcell(:) = zcell0(:) + (1.d0-tau)*dz_cell(kd1,:) + tau*dz_cell(kd2,:)
     endif
-
-    !do i=1,mx_  FIX!!
+    
+    
 
     end subroutine topo_update
 

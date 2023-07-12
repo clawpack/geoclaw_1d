@@ -189,7 +189,14 @@ class DTopography1d(object):
         ## Shouldn't need to interpolate in time.
         with open(path, 'w') as data_file:
 
-            if dtopo_type == 2 or dtopo_type == 3:
+            if dtopo_type == 1:
+                print('+++ dtopo_type 1')
+                for k in range(len(self.times)):
+                    for i in range(len(self.x)):
+                        data_file.write("%20.6e  %20.6e  %20.6e\n" \
+                                % (self.times[k], self.x[i], self.dZ[k,i]))
+
+            elif dtopo_type == 2 or dtopo_type == 3:
                 if len(self.times) == 1:
                     dt = 0.
                 else:
@@ -214,7 +221,7 @@ class DTopography1d(object):
                         data_file.write("\n")
 
             else:
-                raise ValueError("Only dtopo_type 2 and 3 are ",
+                raise ValueError("Only dtopo_type 1, 2 and 3 are ",
                                  "supported in 1d, not dtopo_type=%s." \
                                  % dtopo_type)
 

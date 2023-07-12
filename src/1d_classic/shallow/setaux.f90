@@ -12,8 +12,8 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
     !use geoclaw_module, only: grav  !uncomment if needed
     use geoclaw_module, only: earth_radius, coordinate_system, DEG2RAD
-    use grid_module, only: xp_edge,zcell,mx_edge
-    use topo_module, only: topo_integrate
+    use grid_module, only: xp_edge,mx_edge
+    use topo_module, only: zcell
 
     implicit none
     integer, intent(in) :: mbc,mx,maux
@@ -31,10 +31,11 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
         stop
         endif
 
-    ! compute topo values and store in aux(1,:):
-    !call topo_integrate(mx,mbc,maux,aux)
-    
+    ! store topo values in aux(1,:):
+    ! computation of cell averages is done in read_topo_file or topo_update
 
+    write(6,*) '+++ Before resetting aux, aux(1,200) = ',aux(1,200)
+    
     do i=1,mx
         aux(1,i) = zcell(i)
         !write(6,*) '+++ i,zcell: ',i,zcell(i)
@@ -47,6 +48,10 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
             write(6,*) '+++ i,xp_edge(i),xp_edge(i+1): ',i,xp_edge(i),xp_edge(i+1)
             endif
     enddo
+    
+    write(6,*) '+++ After resetting aux, aux(1,200) = ',aux(1,200)
+    write(6,*) '+++ zcell(200) = ',zcell(200)
+
 
     aux(:,0) = aux(:,1)
     aux(:,-1) = aux(:,1)

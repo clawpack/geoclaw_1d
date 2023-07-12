@@ -21,6 +21,7 @@ c
       use grid_module, only: monitor_fgmax,iunit_fgmax
       use grid_module, only: hmax, smax, xcell
       use topo_module, only: read_topo_settings, read_dtopo_settings
+      use topo_module, only: topo_finalized, t_dtopo, topo_update
 
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
@@ -224,10 +225,21 @@ c
          go to 900
       end if
 
+      if (.not. topo_finalized) then
+          if (t_dtopo(1) < t0) then
+              ! initial dtopo motion before start of simulation
+              ! note that in this case topo is updated before qinit is called,
+              ! so ocean at rest data will be on top of deformed topo
+              call topo_update(t0)
+          endif
+      endif
+      
 c
 c     # set initial conditions:
 c
       call qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
+      
+
 c
       if (output_t0) then
 c     # output initial data
@@ -356,4 +368,3 @@ c
 c
       return 
       end
-
