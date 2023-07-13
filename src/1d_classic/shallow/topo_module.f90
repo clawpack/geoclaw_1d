@@ -344,31 +344,33 @@ contains
     if ((mt_dtopo == 0) .or. topo_finalized) return
 
     if (mt_dtopo == 1) then
+        ! instantaneous displacement at the one time t_dtopo(1):
         if (t < t_dtopo(1)) then
             zcell(:) = zcell0(:)
         else
             zcell(:) = zcell0(:) + dz_cell(1,:)
         endif
+    else if (t > t_dtopo(mt_dtopo)) then
+        ! move topo for final time:
+        write(6,*) '+++ t is past end of t_dtopo array'
+        zcell(:) = zcell0(:) + dz_cell(mt_dtopo,:)
+        topo_finalized = .true.
     else
         ! interpolate in time:
-        do kd1=1,mt_dtopo
-            
-            write(6,*) '+++ checking kd1,t,t_dtopo(kd1) = ',kd1,t, t_dtopo(kd1)
-            if (t >= t_dtopo(kd1)) then
+        do kd2=1,mt_dtopo
+            write(6,*) '+++ checking kd2,t,t_dtopo(kd2) = ',kd2,t, t_dtopo(kd2)
+            if (t <= t_dtopo(kd2)) then
                 exit
             else
-                write(6,*) 'no exit when t, t_dtopo(kd1) = ',t,t_dtopo(kd1)
+                write(6,*) 'no exit when t, t_dtopo(kd2) = ',t,t_dtopo(kd2)
             endif
         enddo
+        
+        if (kd2 > mt_dtopo) write(6,*) '*** unexpected! kd2 > mt_dtopo'
+        
+        kd1 = kd2-1
         write(6,*) '+++ mt_dtopo, kd1: ',mt_dtopo, kd1
-        if (kd1 == mt_dtopo) then
-            ! done moving topo:
-            topo_finalized = .true.
-            write(6,*) '+++ end of dtopo array'
-            return
-        endif
 
-        kd2 = kd1+1
         tau = (t - t_dtopo(kd1)) / (t_dtopo(kd2) - t_dtopo(kd1))
         write(6,*) '+++ updating topo with tau = ',tau
         zcell(:) = zcell0(:) + (1.d0-tau)*dz_cell(kd1,:) + tau*dz_cell(kd2,:)
