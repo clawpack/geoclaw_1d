@@ -231,6 +231,7 @@ c
               ! note that in this case topo is updated before qinit is called,
               ! so ocean at rest data will be on top of deformed topo
               call topo_update(t0)
+              call setaux(mbc,mx,xlower,dx,maux,aux)
           endif
       endif
       

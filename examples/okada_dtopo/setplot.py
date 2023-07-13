@@ -64,7 +64,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(211)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-0.5,0.5]
+    plotaxes.ylimits = [-5,5]
     plotaxes.title = 'Surface displacement'
     plotaxes.afteraxes = fixticks
     plotaxes.skip_patches_outside_xylimits = False
@@ -76,9 +76,9 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
+    #plotitem.show = False
     plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
+    plotitem.color = 'g'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
@@ -102,17 +102,12 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
+    #plotitem.show = False
     plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
+    plotitem.color = 'g'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 1
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
 
     #----------
 
@@ -123,8 +118,8 @@ def setplot(plotdata):
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(211)'
-    plotaxes.xlimits = [-5e3,1e3]
-    plotaxes.ylimits = [-2,2]
+    plotaxes.xlimits = [-50e3,1e3]
+    plotaxes.ylimits = [-20,20]
     plotaxes.title = 'Zoom on shelf'
 
     plotaxes.afteraxes = fixticks
@@ -141,17 +136,17 @@ def setplot(plotdata):
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
+    plotitem.color = 'g'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(212)'
     #plotaxes.xlimits = [-2000,2000]
-    plotaxes.xlimits = [-100,100]
+    plotaxes.xlimits = [-100,300]
     #plotaxes.ylimits = [-10,40]
     #plotaxes.ylimits = [-20,60]
-    plotaxes.ylimits = [-2,2]
+    plotaxes.ylimits = [-10,15]
     plotaxes.title = 'Zoom around shore'
 
     plotaxes.afteraxes = fixticks1

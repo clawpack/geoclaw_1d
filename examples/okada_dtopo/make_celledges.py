@@ -25,7 +25,7 @@ xzpairs = [(x1,-4000),   # left edge
 
 topo_fcn = nonuniform_grid_tools.make_pwlin_topo_fcn(xzpairs)
 
-mx = 1000   # number of grid cells
+mx = 2000   # number of grid cells
 hmin = 5.  # mininum depth for varying cell widths
 
 nonuniform_grid_tools.make_celledges_cfl(x1, x2, mx, topo_fcn,

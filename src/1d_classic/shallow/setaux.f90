@@ -34,7 +34,7 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     ! store topo values in aux(1,:):
     ! computation of cell averages is done in read_topo_file or topo_update
 
-    write(6,*) '+++ Before resetting aux, aux(1,200) = ',aux(1,200)
+    !write(6,*) '+++ Before resetting aux, aux(1,200) = ',aux(1,200)
     
     do i=1,mx
         aux(1,i) = zcell(i)
@@ -49,8 +49,8 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
             endif
     enddo
     
-    write(6,*) '+++ After resetting aux, aux(1,200) = ',aux(1,200)
-    write(6,*) '+++ zcell(200) = ',zcell(200)
+    !write(6,*) '+++ After resetting aux, aux(1,200) = ',aux(1,200)
+    !write(6,*) '+++ zcell(200) = ',zcell(200)
 
 
     aux(:,0) = aux(:,1)

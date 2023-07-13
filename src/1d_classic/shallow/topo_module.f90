@@ -89,7 +89,6 @@ contains
     ! storage for cell averages of topo:
     allocate(zcell(1-mbc:mx+mbc), zcell0(1-mbc:mx+mbc))
 
-    write(6,*) '+++ call cell_average...'
     ! compute zcell by cell-averaging pw linear function
     ! defined by xtopo,ztopo:
     call cell_average(mx_topo, xtopo, ztopo, zcell(1:mx))
@@ -263,13 +262,9 @@ contains
             if (t == t0 ) then
                 mx_dtopo = mx_dtopo + 1
             endif
-            write(6,*) '+++ status, mx_dtopo,t,x: ',status,mx_dtopo,t,x
             dtopo_size = dtopo_size + 1
         end do
-        write(6,*) '+++ mx_dtopo = ',mx_dtopo
-        write(6,*) '+++ dtopo_size = ',dtopo_size
         mt_dtopo = dtopo_size/mx_dtopo
-        write(6,*) '+++ mt_dtopo = ',mt_dtopo
         x2 = x
         tf = t
         if (mt_dtopo > 1) then
@@ -277,9 +272,8 @@ contains
         else
             dt_dtopo = 0.
         endif
-        write(6,*) '+++ dt_dtopo = ',dt_dtopo
-        rewind(iunit)
         
+        rewind(iunit)
 
         allocate(x_dtopo(mx_dtopo), dz_dtopo(mt_dtopo,mx_dtopo), &
                  t_dtopo(mt_dtopo))
@@ -304,7 +298,6 @@ contains
                 dz_cell(k,mx+ibc) = dz_cell(k,mx)
             enddo
     
-            write(6,*) '+++ dz_cell(1,200) = ',dz_cell(1,200)
         enddo
         close(iunit)
 
@@ -352,27 +345,25 @@ contains
         endif
     else if (t > t_dtopo(mt_dtopo)) then
         ! move topo for final time:
-        write(6,*) '+++ t is past end of t_dtopo array'
+        !write(6,*) '+++ t is past end of t_dtopo array'
         zcell(:) = zcell0(:) + dz_cell(mt_dtopo,:)
         topo_finalized = .true.
     else
         ! interpolate in time:
         do kd2=1,mt_dtopo
-            write(6,*) '+++ checking kd2,t,t_dtopo(kd2) = ',kd2,t, t_dtopo(kd2)
+            !write(6,*) '+++ checking kd2,t,t_dtopo(kd2) = ',kd2,t, t_dtopo(kd2)
             if (t <= t_dtopo(kd2)) then
                 exit
-            else
-                write(6,*) 'no exit when t, t_dtopo(kd2) = ',t,t_dtopo(kd2)
             endif
         enddo
         
         if (kd2 > mt_dtopo) write(6,*) '*** unexpected! kd2 > mt_dtopo'
         
         kd1 = kd2-1
-        write(6,*) '+++ mt_dtopo, kd1: ',mt_dtopo, kd1
+        !write(6,*) '+++ mt_dtopo, kd1: ',mt_dtopo, kd1
 
         tau = (t - t_dtopo(kd1)) / (t_dtopo(kd2) - t_dtopo(kd1))
-        write(6,*) '+++ updating topo with tau = ',tau
+        !write(6,*) '+++ updating topo with tau = ',tau
         zcell(:) = zcell0(:) + (1.d0-tau)*dz_cell(kd1,:) + tau*dz_cell(kd2,:)
     endif
     

@@ -35,7 +35,7 @@ else:
     rupture_time = 0.0 # same for all subfaults
     rise_time = 10.  
       
-average_slip = 1.0
+average_slip = 10.0
 
 # split into subfaults if desired:
 nsubfaults = 2
@@ -62,7 +62,7 @@ for i in range(nsubfaults):
     subfault.longitude = longitude0 + i*dlongitude
     subfault.coordinate_specification = 'top'
     subfault.strike = strike
-    subfault.rupture_time = rupture_time  # all at same time
+    subfault.rupture_time = rupture_time # all at same time
     subfault.rise_time = rise_time
     fault.subfaults.append(subfault)
 
@@ -77,12 +77,15 @@ if fault.rupture_type == 'kinematic':
 else:
     tend = 1.
     times = [0.,1.]
+    
 
 print('dtopofile will have times: ',times)
 xgrid,zgrid = loadtxt('celledges.data', skiprows=1, unpack=True)
-xcell = 0.5*(xgrid[:-1] + xgrid[1:]) # cell centers
 
-x = xcell / 111.e3  # convert meters to longitude
+# coarsen if desired:
+xgrid = linspace(xgrid[0],xgrid[-1],100)
+
+x = xgrid / LAT2METER  # convert meters to longitude
 y = array([0,1])  # for 1d Okada
 
 dtopo2d = fault.create_dtopography(x,y,times)
@@ -100,8 +103,8 @@ if 1:
     figure(351)
     clf()
     dz = dtopo.dZ[-1,:]  # slice in x at final time
-    plot(xcell,dz)
+    plot(dtopo.x,dz)
     title('Okada final deformation after t = %.2f' % tend)
-    fname = 'dtopo_okada2.png'
+    fname = 'dtopo_okada.png'
     savefig(fname)
     print('Created ',fname)
