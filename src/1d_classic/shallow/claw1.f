@@ -550,9 +550,9 @@ c               # reject this step
                 call copyq1(meqn,mbc,mx,work(i0qwork),q)
 c
                 if (method(4) .eq. 1) then
-                   write(6,602) 
+                   write(6,602)  cfl
   602              format('CLAW1 rejecting step... ',
-     &                         'Courant number too large')
+     &                         'Courant number too large: ',d18.8)
                    endif
                 if (method(1).eq.1) then
 c                   # if variable dt, go back and take a smaller step
