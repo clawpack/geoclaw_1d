@@ -190,7 +190,6 @@ class DTopography1d(object):
         with open(path, 'w') as data_file:
 
             if dtopo_type == 1:
-                print('+++ dtopo_type 1')
                 for k in range(len(self.times)):
                     for i in range(len(self.x)):
                         data_file.write("%20.6e  %20.6e  %20.6e\n" \
