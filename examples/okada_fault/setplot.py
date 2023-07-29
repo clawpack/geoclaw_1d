@@ -34,7 +34,7 @@ except:
 
 xmax = None # to suppress plotting max elevation as red curve 
 
-xlimits = [-150e3,0e3]
+xlimits = [-300e3,1e3]
 
 def setplot(plotdata):
 
@@ -57,7 +57,6 @@ def setplot(plotdata):
             plot(xmax, etamax, 'r')
         xlimits = gca().get_xlim()
         print('+++ xlimits = ',xlimits)
-        import pdb; pdb.set_trace()
         grid(True)
 
     plotfigure = plotdata.new_plotfigure(name='domain', figno=0)
@@ -120,13 +119,13 @@ def setplot(plotdata):
 
     plotfigure = plotdata.new_plotfigure(name='shore', figno=1)
     #plotfigure.kwargs = {'figsize':(9,11)}
-    plotfigure.show = False
+    #plotfigure.show = False
     
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(211)'
-    plotaxes.xlimits = [0,80e3]
-    plotaxes.ylimits = [-4,4]
+    plotaxes.xlimits = [-5e3,1e3]
+    plotaxes.ylimits = [-2,2]
     plotaxes.title = 'Zoom on shelf'
 
     plotaxes.afteraxes = fixticks
@@ -146,22 +145,28 @@ def setplot(plotdata):
     plotitem.color = 'k'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
+
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(212)'
     #plotaxes.xlimits = [-2000,2000]
-    plotaxes.xlimits = [-1000,1000]
+    plotaxes.xlimits = [-100,100]
     #plotaxes.ylimits = [-10,40]
-    plotaxes.ylimits = [-20,60]
+    #plotaxes.ylimits = [-20,60]
+    plotaxes.ylimits = [-2,2]
     plotaxes.title = 'Zoom around shore'
 
-    plotaxes.afteraxes = fixticks
+    plotaxes.afteraxes = fixticks1
     plotaxes.skip_patches_outside_xylimits = False
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
+    #plotitem.show = False
     plotitem.plot_var = geoplot.surface
+    plotitem.color = 'b'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
+    #plotitem.show = False
     plotitem.plot_var = geoplot.surface
     plotitem.plot_var2 = geoplot.topo
     plotitem.color = 'b'

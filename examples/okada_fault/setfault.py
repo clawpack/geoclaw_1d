@@ -1,10 +1,10 @@
 
-from __future__ import print_function
 from numpy import arange,cos,sin,pi
 from clawpack.geoclaw.data import LAT2METER
+from importlib import reload
 
-import clawpack.geoclaw_1d.dtopotools_horiz_okada_and_1d as dtopotools
-#reload(dtopotools)
+from clawpack.geoclaw_1d import dtopotools
+reload(dtopotools)
 
 def make_fault():
     fault = dtopotools.Fault(coordinate_specification='top center')
@@ -25,7 +25,7 @@ def make_fault():
     mu = 3e10
     rupture_time = 0.0
     rise_time = 10.
-    nsubfaults = 1
+    nsubfaults = 2
 
     longitude0 = fault_top_meters/LAT2METER
     dlongitude = width*cos(theta)/LAT2METER / nsubfaults

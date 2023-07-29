@@ -8,11 +8,11 @@ def make_mapc2p(outdir):
     """
     Create a mapc2p function that maps computational cell edges xc
     with 0 <= xc <= 1 to the physical cell edges.  The physical
-    cell edges should be in the file grid.data, starting in the third row.
+    cell edges should be in the file celledges.data, starting in the third row.
     """
 
-    grid_data_file = os.path.join(outdir, 'grid.data')
-    d = np.loadtxt(grid_data_file, skiprows=3) 
+    grid_data_file = os.path.join(outdir, 'celledges.data')
+    d = np.loadtxt(grid_data_file, skiprows=1) 
     ngrid = d.shape[0]
 
     print('mapc2p: Read %i grid values from %s' % (d.shape[0], grid_data_file))

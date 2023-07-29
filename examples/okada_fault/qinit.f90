@@ -1,15 +1,11 @@
 subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     ! Set initial conditions for the q array.
-    ! This default version simply sets eta = max(h + b,0)
 
-    ! For more specific initial conditions
-    !  copy this to an application directory and
-    !  loop over all grid cells to set values of q(1:meqn, 1:mx).
+    use geoclaw_module, only: sea_level
+    use grid_module, only: xcell
 
-    !use geoclaw_module, only: dry_tolerance !uncomment if needed
-    use geoclaw_module, only: grav  !uncomment if needed
-    use grid_module, only: xgrid,zgrid,mx_grid
+    use geoclaw_module, only: dry_tolerance, grav
 
     implicit none
 
@@ -20,7 +16,6 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     !locals
     integer :: i
-    real(kind=8) :: xcell,r,x0
 
     real(kind=8) :: eta
     real(kind=8) :: dz(mx)
@@ -28,6 +23,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
     ! assume displaced surface agrees with sea floor deformation
     open(unit=33,file='dtopo_okada.data',status='old',form='formatted')
 
+    write(6,*) '+++ mx = ',mx
     do i=1,mx
         read(33,*) dz(i)
         enddo

@@ -3,12 +3,11 @@ Make data for qinit by evaluation Okada in the grid cells
 determined by grid.data
 """
 
-from __future__ import print_function
 from pylab import *
 
-import setfault
+import setfault1d
 
-fault = setfault.make_fault()
+fault = setfault1d.make_fault()
 
 tend = 0.
 for s in fault.subfaults:
@@ -16,7 +15,7 @@ for s in fault.subfaults:
 
 times = [tend + 10]  # after all rupture motion
 
-xgrid,zgrid = loadtxt('grid.data', skiprows=3, unpack=True)
+xgrid,zgrid = loadtxt('celledges.data', skiprows=1, unpack=True)
 xcell = 0.5*(xgrid[:-1] + xgrid[1:]) # cell centers
 
 x = xcell / 111.e3  # convert meters to longitude
@@ -26,7 +25,7 @@ dtopo = fault.create_dtopography(x,y,times)
 
 dz = dtopo.dZ[-1,0,:]  # slice in x at final time
 
-fname = 'dtopo_okada.data'
+fname = 'dtopo_okada2.data'
 savetxt(fname,dz)
 print("Created ",fname)
 
@@ -36,7 +35,7 @@ if 1:
     clf()
     plot(xcell,dz)
     title('Okada final deformation')
-    fname = 'dtopo_okada.png'
+    fname = 'dtopo_okada2.png'
     savefig(fname)
     print('Created ',fname)
     

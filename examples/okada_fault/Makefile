@@ -31,8 +31,8 @@ FFLAGS ?=
 # package sources for this program:
 # ---------------------------------
 
-GEOLIB = $(CLAW)/geoclaw_1d/src/1d_nonuniform/shallow
-include $(GEOLIB)/Makefile.geoclaw_1d_nonuniform
+GEOLIB = $(CLAW)/geoclaw_1d/src/1d_classic/shallow
+include $(GEOLIB)/Makefile.geoclaw_1d_classic
 
 # ---------------------------------------
 # package sources specifically to exclude
@@ -62,7 +62,7 @@ include $(CLAWMAKE)
 .PHONY: topo dtopo all
 
 topo:
-	python makegrid.py
+	python make_celledges.py
 
 dtopo:
 	python make_qinit_okada.py
