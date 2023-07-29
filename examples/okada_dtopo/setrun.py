@@ -138,8 +138,8 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.output_step_interval = 50
+        clawdata.total_steps = 200
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
@@ -259,7 +259,7 @@ def setrun(claw_pkg='geoclaw'):
 
     dtopo_data = rundata.dtopo_data
     dtopo_data.dtopofiles.append([1, 'dtopo_okada.dtt1'])
-    dtopo_data.dt_max_dtopo = 2.
+    dtopo_data.dt_max_dtopo = 0.5
 
 
     # ---------------

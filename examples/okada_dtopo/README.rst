@@ -44,6 +44,9 @@ fault dip.  This models a fault that is infinitely long in the strike
 direction orthogonal to this 1d model, also assuming the topography is
 constant in that direction.
 
+Executing make_dtopo.py also produces plots of the subfaults and seafloor
+deformation.
+
 To use::
 
     make topo     # executes make_celledges.py
@@ -56,4 +59,3 @@ Version
 -------
 
 July 2023, For initial release of geoclaw 1d code in Clawpack v5.10
-
