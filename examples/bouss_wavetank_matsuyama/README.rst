@@ -49,13 +49,18 @@ To use::
 
     python plot_gauges.py  # to create a plot of gauges to compare to paper
 
-The `plot_gauges.py` script should create a plot 
-`GaugesFigure5.png <Gauges.png>`__ 
+The `plot_gauges.py` script should create a plot similar to
+`GeoClawFigure5.png <GeoClawFigure5.png>`__ 
 that can be compared to 
 `Figure 5 <MatsuyamaFigure5.png>`__ 
 in the paper.
 
+The gauge plot produced also includes wave tank observations (as a red
+curve) for some gauges.  This data comes from the file
+data_wavegauge.csv (kindly provided by Prof. Matsuyama).
+
 Version
 -------
 
-Pre-release, April, 2021
+August, 2023
+

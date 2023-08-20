@@ -1,5 +1,10 @@
 """
 Plot results at gauges to compare with Figure 5 of Matsuyama et al. (2007).
+Blue curves are the GeoClaw results.
+
+Wavetank data for some of the gauges is available in the file
+data_wavegauge.csv (kindly provided by Prof. Matsuyama).
+At these gauges the observations are also plotted as red curves.
 """
 
 from pylab import *
@@ -48,7 +53,8 @@ for info in gauge_info:
     #ylabel('Surface (m)')
     #title('Gauge %i' % gaugeno)
 
-    legend(loc='upper right')
+    if k != 2:
+        legend(loc='upper right',framealpha=1)
 
 if add_data:
     d = loadtxt('data_wavegauge.csv',skiprows=2,delimiter=',')
@@ -57,7 +63,8 @@ if add_data:
     subplot(6,2,7)
     plot(d[:,0],d[:,3],'r')
     subplot(6,2,2)
-    plot(d[:,0],d[:,4],'r')
+    plot(d[:,0],d[:,4],'r',label='observed')
+    legend(loc='upper right',framealpha=1)
     subplot(6,2,8)
     plot(d[:,0],d[:,5],'r')
     subplot(6,2,12)

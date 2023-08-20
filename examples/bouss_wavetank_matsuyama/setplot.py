@@ -27,7 +27,7 @@ xlimits = [-160,40]
 
 fname_celledges = os.path.abspath('celledges.data')
 
-outdir2 = '_output1'
+outdir2 = None  # set to compare different models
 
 def setplot(plotdata):
 

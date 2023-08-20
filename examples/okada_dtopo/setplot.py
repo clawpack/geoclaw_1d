@@ -1,24 +1,17 @@
 
 
 import os, sys
-from imp import reload
-
+import numpy
 
 try:
     from clawpack.geoclaw_1d import geoplot
 except:
     print('Could not import from geoclaw_1d')
 
-#import clawpack.geoclaw.shallow_1d.plot as geoplot
+from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 
-import setrun
-rundata=setrun.setrun()
+fname_celledges = 'celledges.data'
 
-import mapc2p
-reload(mapc2p)  # in case num_cells changed
-from mapc2p import make_mapc2p
-
-import numpy
 
 try:
     fname = '_output/fort.hmax'
@@ -41,7 +34,9 @@ def setplot(plotdata):
     plotdata.clearfigures()
 
     outdir1 = plotdata.outdir
-    mapc2p1, ngrid1 = make_mapc2p(outdir1)
+    #mapc2p1, ngrid1 = make_mapc2p(outdir1)
+    fname1 = os.path.join(outdir1,fname_celledges)
+    mapc2p1, mx_edge, xp_edge = make_mapc2p(fname1)
 
 
     def fixticks1(current_data):
@@ -55,8 +50,6 @@ def setplot(plotdata):
         ticklabel_format(useOffset=False)
         if xmax is not None:
             plot(xmax, etamax, 'r')
-        xlimits = gca().get_xlim()
-        print('+++ xlimits = ',xlimits)
         grid(True)
 
     plotfigure = plotdata.new_plotfigure(name='domain', figno=0)
