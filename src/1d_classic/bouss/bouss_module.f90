@@ -33,7 +33,8 @@ contains
     ! create and factor tridiagonal matrix for implicit solves.
 
     use geoclaw_module, only: earth_radius,deg2rad,coordinate_system,sea_level
-    use grid_module, only: xcell, zcell, grid_type
+    use grid_module, only: xcell, grid_type
+    use topo_module, only: zcell
     
     implicit none
     integer, intent(in) :: mx, mbc, mthbc(2)
@@ -205,7 +206,8 @@ contains
 subroutine build_tridiag_ms(mx,mbc,mthbc)
 
     use geoclaw_module, only: sea_level, coordinate_system
-    use grid_module, only: xcell, zcell, grid_type
+    use grid_module, only: xcell, grid_type
+    use topo_module, only: zcell
     
     implicit none
     integer, intent(in) :: mx, mbc, mthbc(2)
@@ -499,7 +501,8 @@ end subroutine solve_tridiag_ms
 subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     use geoclaw_module, only: sea_level, coordinate_system
-    use grid_module, only: xcell, zcell, grid_type
+    use grid_module, only: xcell, grid_type
+    use topo_module, only: zcell
     
     implicit none
     integer, intent(in) :: mbc,mx,meqn,maux
