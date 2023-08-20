@@ -16,7 +16,7 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     use geoclaw_module, only: friction_forcing
     use geoclaw_module, only: frictioncoeff => friction_coefficient
     use geoclaw_module, only: earth_radius, coordinate_system
-    use grid_module, only: mx_edge, xp_edge
+    use grid_module, only: xcell
     use bouss_module, only: bouss, ibouss, alpha, cm1, c01, cp1, &
                       solve_tridiag_ms, build_tridiag_sgn, &
                       solve_tridiag_sgn, useBouss
@@ -30,7 +30,7 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
     ! Locals
     real(kind=8) :: eta(0:mx+1)
-    real(kind=8) :: gamma, rcell, u, xcell, tanxR, etax
+    real(kind=8) :: gamma, rcell, u, tanxR, etax
     real(kind=8) :: rk_stage(1:mx,4), delt
     integer ::  i,k,ii,rk_order
     real(kind=8)  q0(meqn,1-mbc:mx+mbc)
@@ -52,18 +52,15 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
 !      ----------------------------------------------------------------
 
-    !if (radial) then  ! OLD
     if (coordinate_system == -1) then
         ! radial source term for SWE:
         do i=1,mx
             if (q(1,i) .gt. dry_tolerance) then
-                ! assume x is radial coordinate in meters, x>=0, 
+                ! x is radial coordinate in meters, x>=0, 
                 ! u = radial velocity
-                rcell = 0.5*(xp_edge(i) + xp_edge(i+1))
-                !rcell = 0.5*(xp_edge(i) + xp_edge(i+1)) - xp_edge(1) ! OLD
-                q(1,i) = q(1,i) - dt/rcell * q(2,i)
+                q(1,i) = q(1,i) - dt/xcell(i) * q(2,i)
                 u = q(2,i)/q(1,i)
-                q(2,i) = q(2,i) - dt/rcell * q(1,i)*u**2
+                q(2,i) = q(2,i) - dt/xcell(i) * q(1,i)*u**2
             endif
          enddo
      endif
@@ -75,8 +72,7 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
         ! u = velocity in latitude direction (m/s) on sphere:
         do i=1,mx
             if (q(1,i) .gt. dry_tolerance) then
-                xcell = 0.5*(xp_edge(i) + xp_edge(i+1))
-                tanxR = tan(xcell*DEG2RAD) / earth_radius
+                tanxR = tan(xcell(i)*DEG2RAD) / earth_radius
                 q(1,i) = q(1,i) + dt * tanxR * q(2,i)
                 u = q(2,i)/q(1,i)
                 q(2,i) = q(2,i) + dt * tanxR * q(1,i)*u**2

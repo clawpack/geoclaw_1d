@@ -43,7 +43,6 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
 !      ----------------------------------------------------------------
 
-    !if (radial) then  ! OLD
     if (coordinate_system == -1) then
         ! radial source term for SWE:
         do i=1,mx
