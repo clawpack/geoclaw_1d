@@ -18,8 +18,7 @@ break up of the dispersive wave into a train of solitary waves.
 
 The file `make_celledges.py` sets up the domain and computational grid.
 A piecewise linear topography is defined by specifying the topography `z`
-value at a set of nodes `x` in the `xzpairs` list.  Set up based on the
-Revere Beach composite beach geometry used in the physical wave tank.
+value at a set of nodes `x` in the `xzpairs` list. 
 
 A nonuniform grid with `mx` grid cells is used with cell widths related
 to the still water depth in such a way that the Courant number is roughly
