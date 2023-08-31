@@ -9,7 +9,7 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
     !use geoclaw_module, only: grav  !uncomment if needed
-    use grid_module, only: xcell,zcell
+    use grid_module, only: xcell
 
     implicit none
 

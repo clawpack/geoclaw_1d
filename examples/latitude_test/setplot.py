@@ -53,7 +53,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(211)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-6,6]
+    plotaxes.ylimits = [-6,8]
     plotaxes.title = 'Surface displacement'
     plotaxes.afteraxes = fixticks
 
