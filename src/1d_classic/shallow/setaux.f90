@@ -39,9 +39,11 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     do i=1,mx
         aux(1,i) = zcell(i)
         !write(6,*) '+++ i,zcell: ',i,zcell(i)
+        ! capacity function for nonuniform grid:
         aux(2,i) = (xp_edge(i+1) - xp_edge(i))/dx
         if (coordinate_system == 2) then
-            ! convert degrees to meters:
+            ! additional factor for latitude coords on sphere: 
+            ! dx in meters = (dx in degrees) * (pi/180) * earth_radius
             aux(2,i) = aux(2,i)* DEG2RAD * earth_radius
         endif
         if (aux(2,i) <= 0.d0) then
@@ -49,9 +51,6 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
             endif
     enddo
     
-    !write(6,*) '+++ After resetting aux, aux(1,200) = ',aux(1,200)
-    !write(6,*) '+++ zcell(200) = ',zcell(200)
-
 
     aux(:,0) = aux(:,1)
     aux(:,-1) = aux(:,1)

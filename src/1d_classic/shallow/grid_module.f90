@@ -19,6 +19,7 @@ module grid_module
     ! to print out total zeta mass each step:
     integer, parameter :: iunit_total_zeta_mass = 69
     logical :: monitor_total_zeta
+    real(kind=8) :: total_zeta_mass_t0  ! store at initial time
 
     ! to print out runup each step:
     integer, parameter :: iunit_runup = 71
@@ -135,10 +136,13 @@ subroutine set_grid(mx,dx)
     endif
 
     monitor_total_zeta = .true.  ! add to setrun?
+    total_zeta_mass_t0 = -9999.  ! to indicate not yet set
     if (monitor_total_zeta) then
         ! to write total_zeta_mass every time step from b4step1:
         open(unit=iunit_total_zeta_mass, file='total_zeta_mass.txt', &
              status='unknown',form='formatted')
+  600   format('t, total_zeta, change in total_zeta')
+        !write(unit=iunit_total_zeta_mass,600) 
     endif
     
     monitor_runup = .true.  ! add to setrun?
