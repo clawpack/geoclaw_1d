@@ -270,7 +270,7 @@ def setrun(claw_pkg='geoclaw'):
     # to corresponding xc as follows:
 
     if 1:
-        xp_gauges = [-100e3, 100e3]   # km
+        xp_gauges = [-100e3, 0.]   # km
         for k,xp_g in enumerate(xp_gauges):
             gaugeno = k+1  
             # compute computational point xc_g that maps to xp_g:
