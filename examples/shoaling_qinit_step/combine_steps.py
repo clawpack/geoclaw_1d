@@ -14,7 +14,7 @@ def save_figure(fname):
     savefig(full_fname, bbox_inches='tight')
     print('Created %s' % full_fname)
 
-outdir = '_output_xw10'
+outdir = '_output'
 final_frame = 75
 dp = loadtxt(outdir + '/fort.q%s' % str(final_frame).zfill(4), skiprows=5)
 #dn = loadtxt('eta_neg.txt', skiprows=5)

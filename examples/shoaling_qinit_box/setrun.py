@@ -255,7 +255,9 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.coordinate_system = 1  # linear distance (meters)
 
     topo_data = rundata.topo_data
+    # note that same file can be used for topo as for specifying grid:
     topo_data.topofiles.append([1, fname_celledges])
+
 
 
     # ---------------

@@ -29,7 +29,7 @@ def save_figure(fname):
 
 xs = 10.e3
 xlimits = [-150e3,50e3]
-outdir = '_output_xw10'
+outdir = '_output'
 
 if run_code:
     runclaw(xclawcmd='xgeo',outdir=outdir)   # run clawpack code
