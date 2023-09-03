@@ -32,8 +32,8 @@ FFLAGS = -llapack -lblas -O2
 # package sources for this program:
 # ---------------------------------
 
-GEOLIB = $(CLAW)/geoclaw_1d/src/1d_classic/bouss
-include $(GEOLIB)/Makefile.geoclaw_1d_classic_bouss
+BOUSSLIB = $(CLAW)/geoclaw_1d/src/1d_classic/bouss
+include $(BOUSSLIB)/Makefile.geoclaw_1d_classic_bouss
 
 # ---------------------------------------
 # package sources specifically to exclude
@@ -54,6 +54,7 @@ MODULES = \
 SOURCES = \
   bc1.f \
   setprob.f90 \
+  #$(BOUSSLIB)/lapack_tridiag.f \  # alternative to linking -lapack -blas
 
 
 #-------------------------------------------------------------------
