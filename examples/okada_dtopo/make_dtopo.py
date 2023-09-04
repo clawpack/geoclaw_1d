@@ -17,11 +17,13 @@ from importlib import reload
 from clawpack.geoclaw_1d import dtopotools
 reload(dtopotools)
 
-fault = dtopotools.Fault1d(coordinate_specification='right')
+fault = dtopotools.Fault1d()
 fault.subfaults = []
 
 strike = 0.  # 0 ==> top is at right in 1d,  180 ==> top at left
-fault_top_meters = -100e3  # x0 (meters) at top edge in 1d
+             # assuming 0 < dip <= 90
+
+fault_top_meters = -100e3  # location x0 (in meters) at top edge in 1d
 longitude0 = fault_top_meters/LAT2METER  # convert to degrees at latitude 0
 
 fault_top_depth = 20e3     # depth of top below surface (meters)
@@ -30,8 +32,6 @@ width = 50e3  # width of fault in 1d (down-dip direction)
 dip = 10.  # dip in degrees
 theta = dip*pi/180.   # dip in radians
 
-
-mu = 3e10  # rigidity (shear modulus)
 
 if 0:
     fault.rupture_type = 'static'  # instantaneous and simultaneous on subfaults
@@ -57,7 +57,6 @@ total_slip = 0.  # keep track
 for i in range(nsubfaults):
     # split total slip between subfaults, starting at top
     subfault = dtopotools.SubFault1d()
-    subfault.mu = mu
     subfault.dip = dip
     subfault.width = subfault_width
     subfault.depth = fault_top_depth + ddepth*i
@@ -68,7 +67,7 @@ for i in range(nsubfaults):
             % (i,subfault.depth/1e3,subfault.slip))
 
     subfault.longitude = longitude0 + i*dlongitude
-    subfault.coordinate_specification = 'top'
+    subfault.coordinate_specification = 'top center'
     subfault.strike = strike
     subfault.rupture_time = rupture_time # all at same time
     subfault.rise_time = rise_time
