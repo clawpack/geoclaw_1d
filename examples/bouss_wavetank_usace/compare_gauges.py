@@ -3,8 +3,7 @@ Plot results at three gauges and compare with experimental data, obtained from
     https://nctr.pmel.noaa.gov/benchmark/Solitary_wave/
 
 If you run this after running GeoClaw using the Madsen-Sorenson option with:
-    rundata.bouss_data.ibouss = 1
-    rundata.bouss_data.B_param = 1/15.  # B for MS
+    rundata.bouss_data.boussEquations = 1
 then you can compare the figure generated to Figure 4 in the BoussClaw paper
     http://dx.doi.org/10.1016/j.coastaleng.2017.01.005
 

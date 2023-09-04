@@ -45,18 +45,8 @@ if run_code:
     runclaw(xclawcmd='xgeo',outdir=outdir_swe)   # run clawpack code
     
 
-savefig_ext = '.pdf'
-figdir = './figures'
-os.system('mkdir -p %s' % figdir)
-
-def save_figure(fname):
-    """Save figure to figdir with desired extension"""
-    full_fname = os.path.join(figdir,fname) + savefig_ext
-    savefig(full_fname, bbox_inches='tight')
-    print('Created %s' % full_fname)
-
 outdirs=[('_output_swe', 'SWE', 'k'), \
-         ('_output_ms', 'MS, B = 1/15', 'b'), \
-         ('_output_sgn', 'SGN, alpha = 1.153','g')]
+         ('_output_ms', 'MS', 'b'), \
+         ('_output_sgn', 'SGN','g')]
 
 compare_gauges.plot_gauges(outdirs, fname_figure='GaugeComparison_BoussSWE.png')
