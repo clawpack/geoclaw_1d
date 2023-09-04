@@ -91,20 +91,8 @@ def setrun(claw_pkg='geoclaw'):
 
     from clawpack.geoclaw_1d.data import BoussData1D
     rundata.add_data(BoussData1D(),'bouss_data')
-    rundata.bouss_data.bouss = True
-    if 1:
-        # SGN
-        rundata.bouss_data.ibouss = 2
-        #rundata.bouss_data.B_param = 1.  # alpha
-        rundata.bouss_data.B_param = 1.153  # alpha
-    else:
-        # Madsen-Sorensen
-        rundata.bouss_data.ibouss = 1
-        #rundata.bouss_data.B_param = 0.  # B for MS
-        rundata.bouss_data.B_param = 1/15.  # B for MS
-
-    rundata.bouss_data.sw_depth0 = 0.06  # depth to switch to SWE
-    #rundata.bouss_data.sw_depth1 = 0.06  # sw_depth1 currently unused
+    rundata.bouss_data.boussEquations = 2    # 0=SWE, 1=MS, 2=SGN
+    rundata.bouss_data.boussMinDepth = 0.06  # depth to switch to SWE
 
     # ---------------
     # Size of system:

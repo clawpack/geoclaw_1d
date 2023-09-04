@@ -1,11 +1,13 @@
 module bouss_module
     
     implicit none
-    logical      :: bouss  ! Turn on the dispersive terms
-    integer :: ibouss      ! Which equations? 1=Madsen, 2=SGN
-    real(kind=8) :: B_param, alpha
-    real(kind=8) :: sw_depth0, sw_depth1
+
+    ! parameters set in setrun:
+    integer :: boussEquations       ! Which equations? 0=SWE, 1=Madsen, 2=SGN
+    real(kind=8) :: boussMinDepth   ! depth below which to switch to SWE
+
     integer :: bc_xlo, bc_xhi
+    real(kind=8) :: B_param, alpha
 
     ! for higher-order derivatives:
     real(kind=8), allocatable, dimension(:) :: rinv, dxm, dxc, cm2r, cp2r, c02r
@@ -50,14 +52,11 @@ contains
  !  # comment lines starting with #:
     call opendatafile(iunit, fname)
 
-    read(7,*) bouss
-    read(7,*) ibouss
-    read(7,*) B_param
-    read(7,*) sw_depth0
-    read(7,*) sw_depth1
-    write(6,*) '*** Ignoring sw_depth1'
+    read(7,*) boussEquations  ! which equations
+    read(7,*) boussMinDepth   ! depth below which to switch to SWE
     
-    if (ibouss==2) alpha = B_param  ! parameter in SGN equations
+    if (boussEquations==1) B_param = 1.d0/15.d0  ! parameter in MS equations
+    if (boussEquations==2) alpha = 1.153  ! parameter in SGN equations
     
     allocate(rinv(0:mx+1),dxm(0:mx+2),dxc(0:mx+1))
     allocate(cm1(0:mx+1),cp1(0:mx+1),c01(0:mx+1))
@@ -181,12 +180,12 @@ contains
     
     do i=2-mbc,mx+mbc-1
         hmin = min(h0(i-1), h0(i), h0(i+1))
-        useBouss(i) = (hmin > sw_depth0)
+        useBouss(i) = (hmin > boussMinDepth)
         !write(6,*) '+++ useBouss: ',i,xcell(i),h0(i),useBouss(i)
     enddo        
     !------------------------------------
     
-    if (ibouss==1) then
+    if (boussEquations==1) then
     
         ! Madsen-Sorensen
         ! Form tridiagonal matrix and factor
@@ -240,7 +239,7 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
         ! unless this is a cell where SWE are used, then leave as row of I
         ! and set RHS to 0, so no modification to SWE result.
         
-        if ((h0(i) > sw_depth0)) then
+        if ((h0(i) > boussMinDepth)) then
             
           ! Replace this row of identity matrix with dispersion terms
           ! Note that cm2r(i)*w(i-1) + c02r(i)*w(i) + cp2r(i)*w(i+1) gives
@@ -417,7 +416,7 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
 
        k = i+1  ! i'th equation corresponds to row k=i+1 of RHS
 
-       if (h0(i) <= sw_depth0) then
+       if (h0(i) <= boussMinDepth) then
             ! no dispersive term:
             psi(k) = 0.d0
 
@@ -460,6 +459,7 @@ subroutine build_tridiag_ms(mx,mbc,mthbc)
         endif
 
 
+        ! OLD NOTATION, NOT USED NOW:
         !if ((h0(i) > sw_depth0) .and. (h0(i) < sw_depth1)) then
         !    ! reduce psi linearly between sw_depth0 and sw_depth1:
         !    psi(k) = psi(k) * (h0(i)-sw_depth0)/(sw_depth1-sw_depth0)
@@ -528,7 +528,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
     if (.false.) then
         do i=2-mbc,mx+mbc-1
             hmin = min(h(i-1), h(i), h(i+1))
-            useBouss(i) = (h(i) > sw_depth0)
+            useBouss(i) = (h(i) > boussMinDepth)
         enddo
     endif
     
@@ -552,7 +552,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         ! unless this is a cell where SWE are used, then leave as row of I
         ! and set RHS to 0, so no modification to SWE result.
         
-        !if ((h(i) > sw_depth0)) then
+        !if ((h(i) > boussMinDepth)) then
         if (useBouss(i)) then
             
           ! Replace this row of identity matrix with dispersion terms
@@ -683,7 +683,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
        k = i+1  ! i'th equation corresponds to row k=i+1 of RHS
 
-       !if (h(i) <= sw_depth0) then
+       !if (h(i) <= boussMinDepth) then
        if (.not. useBouss(i)) then
             ! no dispersive term:
             psi(k) = 0.d0
@@ -708,6 +708,7 @@ subroutine build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         endif
 
 
+        ! OLD NOTATION, NOT USED NOW:
         !if ((h(i) > sw_depth0) .and. (h(i) < sw_depth1)) then
         !    ! reduce psi linearly between sw_depth0 and sw_depth1:
         !    psi(k) = psi(k) * (h(i)-sw_depth0)/(sw_depth1-sw_depth0)

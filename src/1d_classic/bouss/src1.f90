@@ -17,7 +17,7 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     use geoclaw_module, only: frictioncoeff => friction_coefficient
     use geoclaw_module, only: earth_radius, coordinate_system
     use grid_module, only: xcell
-    use bouss_module, only: bouss, ibouss, alpha, cm1, c01, cp1, &
+    use bouss_module, only: boussEquations, alpha, cm1, c01, cp1, &
                       solve_tridiag_ms, build_tridiag_sgn, &
                       solve_tridiag_sgn, useBouss
 
@@ -81,14 +81,14 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
      endif
 
     ! -------------------------------------------------
-    if (bouss) then
+    if (boussEquations > 0) then
         
         ! Boussinesq terms 
 
         rk_order = 1  ! 1 for Forward Euler, 2 for second-order RK
         delt = dt / rk_order
 
-        if (ibouss == 2) then
+        if (boussEquations == 2) then
             ! for SGN, need to factor matrix each step
             call build_tridiag_sgn(meqn,mbc,mx,xlower,dx,q,maux,aux)
         endif
@@ -106,10 +106,10 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
         !-----------------------
         ! First stage (only stage for rk_order == 1):
         
-        if (ibouss == 1) then
+        if (boussEquations == 1) then
           call solve_tridiag_ms(mx,meqn,mbc,dx,q0,maux,aux,psi)
           ! returns solution psi = source term for Madsen
-        else if (ibouss == 2) then
+        else if (boussEquations == 2) then
           call solve_tridiag_sgn(mx,meqn,mbc,dx,q0,maux,aux,psi)
           ! modify solution psi for source term of SGN:
           do i=1,mx
@@ -136,10 +136,10 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
             ! Second stage for 2-stage R-K, solve for psi at midpoint
             ! in time based on q0 computed in first stage:
             
-            if (ibouss == 1) then
+            if (boussEquations == 1) then
                 call solve_tridiag_ms(mx,meqn,mbc,dx,q0,maux,aux,psi)
                 ! returns solution psi = source term for Madsen
-            else if (ibouss == 2) then
+            else if (boussEquations == 2) then
                 call solve_tridiag_sgn(mx,meqn,mbc,dx,q0,maux,aux,psi)
                 ! modify solution psi for source term of SGN:
                 do i=1,mx
