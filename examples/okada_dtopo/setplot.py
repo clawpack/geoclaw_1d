@@ -14,18 +14,18 @@ fname_celledges = 'celledges.data'
 
 
 try:
-    fname = '_output/fort.hmax'
+    fname = '_output/fgmax.txt'
     d = numpy.loadtxt(fname)
-    etamax = numpy.where(d[:,1]>1e-6, d[:,2], numpy.nan)
+    etamax = numpy.where(d[:,1]>1e-6, d[:,3], numpy.nan)
     xmax = d[:,0]
-    jmax = where(d[:,1]>0)[0].max()
+    jmax = numpy.where(d[:,1]>0)[0].max()
     print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2]))
-    print('Loaded hmax from ',fname)
+    print('Loaded fgmax from ',fname)
 except:
     xmax = None
-    print("Failed to load fort.hmax")
+    print("Failed to load runup.txt")
 
-xmax = None # to suppress plotting max elevation as red curve 
+#xmax = None # to suppress plotting max elevation as red curve 
 
 xlimits = [-200e3,1e3]
 
@@ -33,9 +33,7 @@ def setplot(plotdata):
 
     plotdata.clearfigures()
 
-    outdir1 = plotdata.outdir
-    #mapc2p1, ngrid1 = make_mapc2p(outdir1)
-    fname1 = os.path.join(outdir1,fname_celledges)
+    fname1 = os.path.join(plotdata.outdir, fname_celledges)
     mapc2p1, mx_edge, xp_edge = make_mapc2p(fname1)
 
 
@@ -47,9 +45,12 @@ def setplot(plotdata):
 
     def fixticks(current_data):
         from pylab import ticklabel_format, plot,grid,gca
+        from clawpack.visclaw.legend_tools import add_legend
         ticklabel_format(useOffset=False)
         if xmax is not None:
             plot(xmax, etamax, 'r')
+            add_legend(['max eta over simulation','surface elevation eta'],
+                   ['r','b'], loc='lower left', framealpha=1)
         grid(True)
 
     plotfigure = plotdata.new_plotfigure(name='domain', figno=0)
@@ -78,9 +79,7 @@ def setplot(plotdata):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(212)'
     plotaxes.xlimits = xlimits
-    #plotaxes.ylimits = [-1000, 1000]
     plotaxes.title = 'Full depth'
-    #plotaxes.title = 'momentum'
     plotaxes.afteraxes = fixticks1
     plotaxes.skip_patches_outside_xylimits = False
     plotitem.MappedGrid = True
@@ -105,7 +104,6 @@ def setplot(plotdata):
     #----------
 
     plotfigure = plotdata.new_plotfigure(name='shore', figno=1)
-    #plotfigure.kwargs = {'figsize':(9,11)}
     #plotfigure.show = False
     
 
@@ -120,9 +118,6 @@ def setplot(plotdata):
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.surface
-    #plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
-    #plotitem.plot_var = geoplot.surface
-    #plotitem.plot_var2 = geoplot.topo
     plotitem.color = 'b'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
@@ -135,10 +130,7 @@ def setplot(plotdata):
 
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(212)'
-    #plotaxes.xlimits = [-2000,2000]
     plotaxes.xlimits = [-100,300]
-    #plotaxes.ylimits = [-10,40]
-    #plotaxes.ylimits = [-20,60]
     plotaxes.ylimits = [-10,15]
     plotaxes.title = 'Zoom around shore'
 
@@ -146,7 +138,6 @@ def setplot(plotdata):
     plotaxes.skip_patches_outside_xylimits = False
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    #plotitem.show = False
     plotitem.plot_var = geoplot.surface
     plotitem.color = 'b'
     plotitem.MappedGrid = True
@@ -167,12 +158,46 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
 
-    plotdata.printfigs = True          # Whether to output figures
-    plotdata.print_format = 'png'      # What type of output format
-    plotdata.print_framenos = 'all'      # Which frames to output
-    plotdata.print_fignos = 'all'      # Which figures to print
-    plotdata.html = True               # Whether to create HTML files
-    plotdata.latex = False             # Whether to make LaTeX output
-    plotdata.parallel = True
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='Surface & topo', figno=300, \
+                    type='each_gauge')
+
+    plotfigure.clf_each_gauge = True
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.time_scale = 1/3600.  # convert seconds to hours
+    plotaxes.time_label = 'time (hours) post-quake'
+    plotaxes.xlimits = 'auto'
+    #plotaxes.ylimits = [-2.0, 2.0]
+    plotaxes.title = 'Water depth'
+
+    # Plot depth as blue curve:
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = 0
+    plotitem.plotstyle = 'b-'
+
+
+
+    #-----------------------------------------
+
+    # Parameters used only when creating html and/or latex hardcopy
+    # e.g., via pyclaw.plotters.frametools.printframes:
+
+    plotdata.printfigs = True                # print figures
+    plotdata.print_format = 'png'            # file format
+    plotdata.print_framenos = 'all'          # list of frames to print
+    plotdata.print_gaugenos = 'all'          # list of gauges to print
+    plotdata.print_fignos = 'all'            # list of figures to print
+    plotdata.html = True                     # create html files of plots?
+    plotdata.html_homelink = '../README.html'   # pointer for top of index
+    plotdata.latex = True                    # create latex file of plots?
+    plotdata.latex_figsperline = 2           # layout of plots
+    plotdata.latex_framesperline = 1         # layout of plots
+    plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
+
