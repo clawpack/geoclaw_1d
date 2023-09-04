@@ -11,7 +11,8 @@ subroutine qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
 
     ! uncomment if any of these needed...
     !use geoclaw_module, only: dry_tolerance, grav
-    !use grid_module, only: xcell,xp_edge,z_edge,mx_edge
+    !use grid_module, only: xcell,xp_edge,mx_edge
+    !use topo_module, only: zcell0 ! initial topo in each cell
 
     implicit none
 

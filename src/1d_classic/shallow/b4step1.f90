@@ -35,6 +35,7 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
     endif
 
     do i=1-mbc,mx+mbc
+        ! if cell nearly dry, reset h and hu to zero:
         if (q(1,i)<=dry_tolerance) then
             q(1,i) = max(q(1,i),0.0)
             do m=2,meqn
