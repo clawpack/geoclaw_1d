@@ -13,18 +13,18 @@ module grid_module
 
     ! to keep track of max depth, speed over all time:
     real(kind=8), allocatable, dimension(:) ::  hmax, smax
-    integer, parameter :: iunit_fgmax = 7  ! open/close in claw1ez
+    integer, parameter :: iunit_fgmax = 70 ! open/close in claw1ez
     logical :: monitor_fgmax
-
-    ! to print out total zeta mass each step:
-    integer, parameter :: iunit_total_zeta_mass = 69
-    logical :: monitor_total_zeta
-    real(kind=8) :: total_zeta_mass_t0  ! store at initial time
 
     ! to print out runup each step:
     integer, parameter :: iunit_runup = 71
     real(kind=8) :: runup_tolerance
     logical :: monitor_runup
+
+    ! to print out total zeta mass each step:
+    integer, parameter :: iunit_total_zeta_mass = 72
+    logical :: monitor_total_zeta
+    real(kind=8) :: total_zeta_mass_t0  ! store at initial time
 
 contains
 
