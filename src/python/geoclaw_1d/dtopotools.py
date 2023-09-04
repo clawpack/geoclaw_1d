@@ -67,8 +67,8 @@ class SubFault1d(SubFault):
         #self.x0 = None  
         r"""x in meters at location specified by coordinate_specification """
                 
-        self.coordinate_specification = 'top'
-        r"""location of x0: top, centroid, or bottom"""
+        self.coordinate_specification = 'top center'
+        r"""location of x0: 'top center', 'centroid', or 'bottom center' """
         
         self.length = length
         r"""length (m) in strike direction orthogonal to x"""
