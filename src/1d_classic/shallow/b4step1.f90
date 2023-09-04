@@ -88,7 +88,7 @@ subroutine b4step1(mbc,mx,meqn,q,xlower,dx,t,dt,maux,aux)
         i_first_wet = 1
         do while (q(1,i_first_wet) < runup_tolerance)
             i_first_wet = i_first_wet + 1
-            if (i_first_wet == 0) exit
+            if (i_first_wet == mx) exit
         enddo
         x_first_wet = xp_edge(i_first_wet)
         z_first_wet = aux(1,i_first_wet) + q(1,i_first_wet)
