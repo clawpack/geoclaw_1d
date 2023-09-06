@@ -223,7 +223,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.num_ghost = 2
 
     # Choice of BCs at xlower and xupper:
-    #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
+    #   0 or 'user'     => user specified (must modify bc1.f to use this option)
     #   1 or 'extrap'   => extrapolation (non-reflecting outflow)
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
@@ -232,13 +232,6 @@ def setrun(claw_pkg='geoclaw'):
     #clawdata.bc_lower[0] = 'wall'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-    # Specify type of each aux variable in amrdata.auxtype.
-    # This must be a list of length maux, each element of which is one of:
-    #   'center',  'capacity', 'xleft'  (see documentation).
-    # Isn't used for this non-amr version, but still expected in data.
-
-    amrdata = rundata.amrdata
-    amrdata.aux_type = ['center','capacity']
 
     geo_data = rundata.geo_data
 
