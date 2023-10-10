@@ -19,7 +19,7 @@ c
       use grid_module, only: monitor_total_zeta,iunit_total_zeta_mass
       use grid_module, only: monitor_runup,iunit_runup,runup_tolerance
       use grid_module, only: monitor_fgmax,iunit_fgmax
-      use grid_module, only: hmax, smax, xcell
+      use grid_module, only: hmax, smax, hssmax, arrival_time, xcell
       use topo_module, only: read_topo_settings, read_dtopo_settings
       use topo_module, only: topo_finalized, t_dtopo, topo_update
       use bouss_module, only: set_bouss
@@ -344,10 +344,13 @@ c
           write(6,*) 'Writing fgmax.txt file with mx = ',mx
           open(unit=iunit_fgmax, file='fgmax.txt', status='unknown',
      &         form='formatted')
+          write(iunit_fgmax,*) 
+     &          '# xcell, topo, hmax, smax, hssmax, arrival_time'
           do i=1,mx
              etamax = hmax(i) + aux(1,i)
-             write(iunit_fgmax,451) xcell(i),hmax(i),smax(i),etamax
- 451         format(4f16.8)
+             write(iunit_fgmax,451) xcell(i),aux(1,i),hmax(i),smax(i),
+     &             hssmax(i), etamax, arrival_time(i)
+ 451         format(f16.8, 5f16.6, e16.6)
           enddo
           close(iunit_fgmax)
       endif

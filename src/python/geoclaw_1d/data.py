@@ -169,6 +169,9 @@ class GridData1D(clawpack.clawutil.data.ClawData):
 
         self.add_attribute('grid_type',0)
         self.add_attribute('fname_celledges',None)
+        self.add_attribute('monitor_fgmax',False)
+        self.add_attribute('monitor_runup',False)
+        self.add_attribute('monitor_total_zeta',False)
 
     def write(self,out_file='grid.data',data_source='setrun.py'):
 
@@ -185,7 +188,13 @@ class GridData1D(clawpack.clawutil.data.ClawData):
             fname = os.path.abspath(os.path.join(os.path.dirname(out_file),
                                     self.fname_celledges))
             self._out_file.write("\n'%s'   =: fname_celledges\n " % fname)
-            #self.data_write('fname_celledges')
+
+        self._out_file.write("\n%s   =: monitor_fgmax" \
+                             % str(self.monitor_fgmax)[0])
+        self._out_file.write("\n%s   =: monitor_runup" \
+                             % str(self.monitor_runup)[0])
+        self._out_file.write("\n%s   =: monitor_total_zeta" \
+                             % str(self.monitor_total_zeta)[0])
         self.close_data_file()
 
     def read(self, path, force=False):

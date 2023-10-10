@@ -11,10 +11,13 @@ module grid_module
 
     integer :: mx_edge
 
-    ! to keep track of max depth, speed over all time:
-    real(kind=8), allocatable, dimension(:) ::  hmax, smax
+    ! to keep track of max depth, speed, etc. over all time:
+    real(kind=8), allocatable, dimension(:) ::  hmax, smax, hssmax, \
+                                                arrival_time
+    real(kind=8) :: fgmax_arrival_tol, fgmax_tstart
     integer, parameter :: iunit_fgmax = 70 ! open/close in claw1ez
     logical :: monitor_fgmax
+    real(kind=8), parameter :: NOTSET = -0.99999d99
 
     ! to print out runup each step:
     integer, parameter :: iunit_runup = 71
@@ -56,7 +59,25 @@ subroutine set_grid(mx,dx)
         read(iunit,*) fname_celledges
     endif
 
+    read(iunit,*) monitor_fgmax
+    read(iunit,*) monitor_runup
+    read(iunit,*) monitor_total_zeta
     close(unit=iunit)
+
+    if (monitor_fgmax) then
+        
+        ! These are not set in setrun.py at the momemnt
+        !fname_grid = 'fgmax.data'
+        !call opendatafile(iunit,fname_grid)
+        !read(iunit,*) fgmax_tstart
+        !read(iunit,*) fgmax_arrival_tol
+        !close(unit=iunit)
+
+        ! values are hardwired, but could be changed in a setprob function:
+        fgmax_tstart = -1e9  ! by default collect over entire simulation
+        fgmax_arrival_tol = 0.01d0 ! by default, mark arrival if eta > 1 cm 
+
+    endif
 
 
     if (grid_type == 0) then
@@ -126,17 +147,19 @@ subroutine set_grid(mx,dx)
         xcell(i) = 0.5d0*(xp_edge(i) + xp_edge(i+1))
     enddo
 
-    monitor_fgmax = .true.  ! add to setrun?
+    ! monitor_fgmax = has been added to setrun
     if (monitor_fgmax) then
         ! for keeping track of max depth, speed over all time:
         ! initialize here and update in b4step1
-        allocate(hmax(mx), smax(mx))
+        allocate(hmax(mx), smax(mx), hssmax(mx), arrival_time(mx))
         hmax(:) = 0.d0
         smax(:) = 0.d0
+        hssmax(:) = 0.d0
+        arrival_time(:) = NOTSET   ! to flag no arrival yet
     endif
 
-    monitor_total_zeta = .true.  ! add to setrun?
-    total_zeta_mass_t0 = -9999.  ! to indicate not yet set
+    ! monitor_total_zeta has been added to setrun
+    total_zeta_mass_t0 = NOTSET   ! to indicate not yet set
     if (monitor_total_zeta) then
         ! to write total_zeta_mass every time step from b4step1:
         open(unit=iunit_total_zeta_mass, file='total_zeta_mass.txt', &
@@ -145,13 +168,16 @@ subroutine set_grid(mx,dx)
         !write(unit=iunit_total_zeta_mass,600) 
     endif
     
-    monitor_runup = .true.  ! add to setrun?
+    ! monitor_runup has been added to setrun
     if (monitor_runup) then
         ! to write x,z from first/last wet cell 
         ! every time step from b4step1:
         open(unit=iunit_runup, file='runup.txt', &
              status='unknown',form='formatted')
-        runup_tolerance = 2.d0*dry_tolerance   ! add to setrun?
+        write(iunit_runup,*) '#  t,           x_first_wet,    ' &
+                // 'eta_first_wet,  x_last_wet,   eta_last_wet'
+        ! This is hardwired, but could be changed in a setprob function:
+        runup_tolerance = 2.d0*dry_tolerance  ! when to view cell as wet
     endif
     
 end subroutine set_grid
