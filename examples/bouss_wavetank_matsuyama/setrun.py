@@ -77,13 +77,22 @@ def setrun(claw_pkg='geoclaw'):
     # Number of grid cells:
     clawdata.num_cells[0] = mx
     
+    # eventually rundata.grid_data should be incorporated in clawutil/data.py
+    # and then this import and add_data should be removed:
     from clawpack.geoclaw_1d.data import GridData1D
     rundata.add_data(GridData1D(),'grid_data')
+
     rundata.grid_data.grid_type = grid_type  # should be set to 2 above
     rundata.grid_data.fname_celledges = fname_celledges
+    rundata.grid_data.monitor_fgmax = False  # record max h,s,etc in each cell?
+    rundata.grid_data.monitor_runup = False  # record first and last wet cells?
+    rundata.grid_data.monitor_total_zeta = False # record "total mass in wave"?
 
+    # eventually rundata.bouss_data should be incorporated in clawutil/data.py
+    # and then this import and add_data should be removed:
     from clawpack.geoclaw_1d.data import BoussData1D
     rundata.add_data(BoussData1D(),'bouss_data')
+
     rundata.bouss_data.boussEquations = 2    # 0=SWE, 1=MS, 2=SGN
     rundata.bouss_data.boussMinDepth = 0.06  # depth to switch to SWE
 
