@@ -43,6 +43,7 @@ class GeoClawData1D(clawpack.clawutil.data.ClawData):
         self.add_attribute('gravity',9.8)
         self.add_attribute('earth_radius',Rearth)
         self.add_attribute('coordinate_system',1)
+        self.add_attribute('sphere_source',2)
         self.add_attribute('friction_forcing',True)
         self.add_attribute('friction_coefficient',0.025)
 
@@ -59,6 +60,7 @@ class GeoClawData1D(clawpack.clawutil.data.ClawData):
         self.data_write('gravity')
         self.data_write('earth_radius')
         self.data_write('coordinate_system')
+        self.data_write('sphere_source')
         self.data_write('sea_level')
 
         friction = self.friction_forcing
