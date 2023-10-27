@@ -6,7 +6,7 @@ Classes representing parameters for 1D GeoClaw runs
 
 :Classes:
 
- - GeoClawData1D
+ - GeoClawData1D -- has been removed, now using usual GeoClawData
  - GaugeData1D
  - GridData1D
 
@@ -31,60 +31,6 @@ DEG2RAD = numpy.pi / 180.0
 RAD2DEG = 180.0 / numpy.pi
 LAT2METER = Rearth * DEG2RAD
 
-class GeoClawData1D(clawpack.clawutil.data.ClawData):
-    r"""
-    1D Geoclaw data object
-
-    """
-    def __init__(self):
-        super(GeoClawData1D,self).__init__()
-
-        # GeoClaw physics parameters
-        self.add_attribute('gravity',9.8)
-        self.add_attribute('earth_radius',Rearth)
-        self.add_attribute('coordinate_system',1)
-        self.add_attribute('sphere_source',2)
-        self.add_attribute('friction_forcing',True)
-        self.add_attribute('friction_coefficient',0.025)
-
-        # GeoClaw algorithm parameters
-        self.add_attribute('dry_tolerance',1e-3)
-        self.add_attribute('friction_depth',1.0e6)
-        self.add_attribute('sea_level',0.0)
-
-
-    def write(self,data_source='setrun.py'):
-
-        self.open_data_file('geoclaw.data',data_source)
-
-        self.data_write('gravity')
-        self.data_write('earth_radius')
-        self.data_write('coordinate_system')
-        self.data_write('sphere_source')
-        self.data_write('sea_level')
-
-        friction = self.friction_forcing
-        if isinstance(self.friction_forcing,bool):
-            if self.friction_forcing:
-                friction = 1
-            else:
-                friction = 0
-        elif isinstance(self.friction_forcing,str):
-            if self.friction_forcing in ['Manning','manning','MANNING']:
-                friction = 1
-            elif self.friction_forcing in ['Coulomb','coulomb','COULOMB']:
-                friction = 2
-            else:
-                friction = 0
-        self.friction_forcing = friction
-
-
-        self.data_write('friction_forcing')
-        self.data_write('friction_coefficient')
-        self.data_write('friction_depth')
-        self.data_write('dry_tolerance')
-
-        self.close_data_file()
 
 #  Gauge data object
 
