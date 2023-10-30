@@ -8,8 +8,9 @@ except:
     print('Could not import from geoclaw_1d')
 
 from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
-from clawpack.visclaw import legend_tools
 import numpy
+
+fname_celledges = os.path.abspath('celledges.data')
 
 fname = '_output/fgmax.txt'
 try:
@@ -24,10 +25,11 @@ try:
 except:
     xmax = None
     print('Failed to load ',fname)
+    
+#xmax = None # to suppress plotting max elevation as red curve 
 
 xlimits = [-100e3,1e3]
 
-fname_celledges = os.path.abspath('celledges.data')
 
 def setplot(plotdata):
 
@@ -50,7 +52,18 @@ def setplot(plotdata):
         grid(True)
         legend_tools.add_legend(['surface eta', 'maximum eta'],
             colors=['b','r'], loc='lower right')
+            
+    def fix_layout(current_data):
+        from pylab import tight_layout
+        tight_layout()
 
+    def add_etamax(current_data):
+        from pylab import plot
+        from clawpack.visclaw.legend_tools import add_legend
+        if xmax is not None:
+            plot(xmax, etamax, 'r')
+            add_legend(['max eta over simulation','surface elevation eta'],
+                   ['r','b'], framealpha=1)
         
     def velocity(current_data):
         from pylab import where,nan
@@ -66,7 +79,7 @@ def setplot(plotdata):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = [-3,10]
     plotaxes.title = 'Surface displacement at time h:m:s'
-    plotaxes.afteraxes = fixticks1
+    plotaxes.grid = True
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.surface
@@ -86,7 +99,7 @@ def setplot(plotdata):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = [-1.0,2.0]
     plotaxes.title = 'Velocity at time h:m:s'
-    plotaxes.afteraxes = fixticks1
+    plotaxes.grid = True
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
@@ -101,7 +114,8 @@ def setplot(plotdata):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = [-5000,500]
     plotaxes.title = 'Full depth at time h:m:s'
-    plotaxes.afteraxes = fixticks1
+    plotaxes.grid = True
+    plotaxes.afteraxes = fix_layout
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
     
@@ -137,8 +151,8 @@ def setplot(plotdata):
     plotaxes.xlimits = [-1500,500]
     plotaxes.ylimits = [-10,25]
     plotaxes.title = 'Zoom around shore at time h:m:s'
-
-    plotaxes.afteraxes = fixticks
+    plotaxes.grid = True
+    plotaxes.afteraxes = add_etamax
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.show = False
@@ -168,26 +182,39 @@ def setplot(plotdata):
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+    plotfigure = plotdata.new_plotfigure(name='eta', figno=300, \
                                          type='each_gauge')
     plotfigure.clf_each_gauge = True
 
     plotaxes = plotfigure.new_plotaxes()
+    plotaxes.time_scale = 1/3600.  # convert seconds to hours
+    plotaxes.time_label = 'time (hours) post-quake'
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = [-2,2]
+    #plotaxes.ylimits = [-2,2]
     plotaxes.title = 'Surface elevation eta'
+    plotaxes.grid = True
+    
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 2  # eta
     plotitem.plotstyle = 'b-'
 
 
-    plotdata.printfigs = True          # Whether to output figures
-    plotdata.print_format = 'png'      # What type of output format
-    plotdata.print_framenos = 'all'      # Which frames to output
-    plotdata.print_fignos = 'all'      # Which figures to print
-    plotdata.html = True               # Whether to create HTML files
-    plotdata.latex = False             # Whether to make LaTeX output
-    plotdata.parallel = True
+    #-----------------------------------------
+
+    # Parameters used only when creating html and/or latex hardcopy
+    # e.g., via pyclaw.plotters.frametools.printframes:
+    
+    plotdata.printfigs = True                # print figures
+    plotdata.print_format = 'png'            # file format
+    plotdata.print_framenos = 'all'          # list of frames to print
+    plotdata.print_gaugenos = 'all'          # list of gauges to print
+    plotdata.print_fignos = 'all'            # list of figures to print
+    plotdata.html = True                     # create html files of plots?
+    plotdata.html_homelink = '../README.html'   # pointer for top of index
+    plotdata.latex = True                    # create latex file of plots?
+    plotdata.latex_figsperline = 2           # layout of plots
+    plotdata.latex_framesperline = 1         # layout of plots
+    plotdata.latex_makepdf = False           # also run pdflatex?
+    plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
-
