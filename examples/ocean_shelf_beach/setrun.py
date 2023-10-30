@@ -84,8 +84,8 @@ def setrun(claw_pkg='geoclaw'):
 
     rundata.grid_data.grid_type = grid_type  # should be set to 2 above
     rundata.grid_data.fname_celledges = fname_celledges
-    rundata.grid_data.monitor_fgmax = False  # record max h,s,etc in each cell?
-    rundata.grid_data.monitor_runup = False  # record first and last wet cells?
+    rundata.grid_data.monitor_fgmax = True  # record max h,s,etc in each cell?
+    rundata.grid_data.monitor_runup = True  # record first and last wet cells?
     rundata.grid_data.monitor_total_zeta = False # record "total mass in wave"?
 
 

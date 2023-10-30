@@ -7,21 +7,23 @@ try:
 except:
     print('Could not import from geoclaw_1d')
 
-
 from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
+from clawpack.visclaw import legend_tools
 import numpy
 
+fname = '_output/fgmax.txt'
 try:
-    fname = '_output/fort.hmax'
     d = numpy.loadtxt(fname)
-    etamax = numpy.where(d[:,1]>1e-6, d[:,2], numpy.nan)
     xmax = d[:,0]
-    jmax = where(d[:,1]>0)[0].max()
-    print("run-in = %8.2f,  run-up = %8.2f" % (d[jmax,0],d[jmax,2]))
+    Bmax = d[:,1]
+    hmax = d[:,2]
+    etamax = numpy.where(hmax>1e-3, hmax+Bmax, numpy.nan)
+    jmax = numpy.where(hmax>1e-3)[0].max()
+    print("run-in = %8.2f m,  run-up = %8.2f m" % (xmax[jmax],etamax[jmax]))
     print('Loaded hmax from ',fname)
 except:
     xmax = None
-    print("Failed to load fort.hmax")
+    print('Failed to load ',fname)
 
 xlimits = [-100e3,1e3]
 
@@ -46,6 +48,9 @@ def setplot(plotdata):
         if xmax is not None:
             plot(xmax, etamax, 'r')
         grid(True)
+        legend_tools.add_legend(['surface eta', 'maximum eta'],
+            colors=['b','r'], loc='lower right')
+
         
     def velocity(current_data):
         from pylab import where,nan
@@ -60,8 +65,8 @@ def setplot(plotdata):
     plotaxes.axescmd = 'subplot(311)'
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = [-3,10]
-    plotaxes.title = 'Surface displacement'
-    plotaxes.afteraxes = fixticks
+    plotaxes.title = 'Surface displacement at time h:m:s'
+    plotaxes.afteraxes = fixticks1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.surface
@@ -80,7 +85,7 @@ def setplot(plotdata):
     plotaxes.axescmd = 'subplot(312)'
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = [-1.0,2.0]
-    plotaxes.title = 'Velocity'
+    plotaxes.title = 'Velocity at time h:m:s'
     plotaxes.afteraxes = fixticks1
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
@@ -95,7 +100,7 @@ def setplot(plotdata):
     plotaxes.axescmd = 'subplot(313)'
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = [-5000,500]
-    plotaxes.title = 'Full depth'
+    plotaxes.title = 'Full depth at time h:m:s'
     plotaxes.afteraxes = fixticks1
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
@@ -129,9 +134,9 @@ def setplot(plotdata):
     #plotfigure.show = False
     
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [-1000,1000]
-    plotaxes.ylimits = [-20,20]
-    plotaxes.title = 'Zoom around shore'
+    plotaxes.xlimits = [-1500,500]
+    plotaxes.ylimits = [-10,25]
+    plotaxes.title = 'Zoom around shore at time h:m:s'
 
     plotaxes.afteraxes = fixticks
 
