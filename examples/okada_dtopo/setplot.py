@@ -10,8 +10,7 @@ except:
 
 from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 
-fname_celledges = 'celledges.data'
-
+fname_celledges = os.path.abspath('celledges.data')
 
 fname = '_output/fgmax.txt'
 try:
@@ -155,7 +154,7 @@ def setplot(plotdata):
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='Depth', figno=300, \
+    plotfigure = plotdata.new_plotfigure(name='depth', figno=300, \
                     type='each_gauge')
 
     plotfigure.clf_each_gauge = True
@@ -195,4 +194,3 @@ def setplot(plotdata):
     plotdata.parallel = True                 # make multiple frame png's at once
 
     return plotdata
-
