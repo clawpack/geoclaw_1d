@@ -1,3 +1,17 @@
+"""
+Some tools for making 1D grids.
+
+make_mapc2p - based on a file celledges.data with cell edges, create a
+    mapc2p file making 0 <= xc <= 1 to physical cell edges.
+
+make_celledges_cfl - create a celledges.data file with celledges chosen so
+    that the Courant number is nearly 1 in each cell in the ocean.
+
+make_pwlin_topo_fcn - take a list of (x,z) pairs and create a function that
+    is the piecewise linear interpolant through these points.
+
+"""
+
 from pylab import *
 from scipy.interpolate import interp1d
 import numpy as np
@@ -29,6 +43,11 @@ def make_mapc2p(fname_celledges='celledges.data'):
 
 
 def make_pwlin_topo_fcn(xzpairs):
+    """
+    Input: xzpairs should be a list of tuples (xi,zi).
+    Output: a function that is the piecwise linear interpolant.
+    """
+
     xi = array([xz[0] for xz in xzpairs])
     zi = array([xz[1] for xz in xzpairs])
     z_fcn = interp1d(xi, zi, kind='linear', bounds_error=False, 
