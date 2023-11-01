@@ -8,23 +8,19 @@ that will be read in by the Fortran code.
 
 import os, sys
 import numpy as np
-from mapc2p import make_mapc2p
+from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
 
 
-# Read in nonuniform computational grid, which should have
-# been created using makegrid.py:
+# Read in nonuniform computational cell edges, which should have
+# been created using make_celledges.py:
 
-rundir = os.getcwd()
-mapc2p, ngrid = make_mapc2p(rundir)
-grid_data_file = os.path.join(rundir, 'grid.data')
-print('Found %i grid edges in %s' % (ngrid, grid_data_file))
-mx = ngrid - 1
+grid_type = 2
+fname_celledges = 'celledges.data'
+    
+mapc2p, mx_edge, xp_edge = make_mapc2p(fname_celledges)
+mx = mx_edge - 1
         
-#dxc = 1./mx
-#xc = np.linspace(dxc/2., 1-dxc/2., mx)   # computational cell centers
-xc = np.linspace(0,1,ngrid) # computational cell edges
-xp = mapc2p(xc)  # corresponding physical cell edges
-print('Setting mx = %i, cell edges from %g to %g' % (mx,xp[0],xp[-1]))
+print('Setting mx = %i, cell edges from %g to %g' % (mx,xp_edge[0],xp_edge[-1]))
 
 
 #------------------------------
@@ -79,7 +75,14 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.upper[0] = 1.           # xupper
 
     # Number of grid cells:
-    clawdata.num_cells[0] = 1000       # mx
+    clawdata.num_cells[0] = mx
+    
+    # 1D geoclaw requires grid_data:
+    rundata.grid_data.grid_type = grid_type  # should be set to 2 above
+    rundata.grid_data.fname_celledges = fname_celledges
+    rundata.grid_data.monitor_fgmax = True  # record max h,s,etc in each cell?
+    rundata.grid_data.monitor_runup = False  # record first and last wet cells?
+    rundata.grid_data.monitor_total_zeta = False # record "total mass in wave"?
 
 
     # ---------------
@@ -126,9 +129,9 @@ def setrun(claw_pkg='geoclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 55
-        clawdata.tfinal = 550.
-        clawdata.output_t0 = False  # output at initial (or restart) time?
+        clawdata.num_output_times = 60
+        clawdata.tfinal = 3600.
+        clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
         # Specify a list or numpy array of output times:
@@ -137,12 +140,12 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps = 20
+        clawdata.output_step_interval = 50
+        clawdata.total_steps = 200
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+    clawdata.output_format = 'ascii'  # 'ascii' is only option currently
 
     clawdata.output_q_components = 'all'   # could be list such as [True,True]
     clawdata.output_aux_components = 'all'  # could be list
@@ -170,15 +173,15 @@ def setrun(claw_pkg='geoclaw'):
 
     # Initial time step for variable dt.
     # (If dt_variable==0 then dt=dt_initial for all steps)
-    clawdata.dt_initial = 1.
+    clawdata.dt_initial = 0.01
 
     # Max time step to be allowed if variable dt used:
     clawdata.dt_max = 1.e9
 
     # Desired Courant number if variable dt used
-    clawdata.cfl_desired = 0.15
+    clawdata.cfl_desired = 0.75
     # max Courant number to allow without retaking step with a smaller dt:
-    clawdata.cfl_max = 0.2
+    clawdata.cfl_max = 1.0
 
     # Maximum number of time steps to allow between output times:
     clawdata.steps_max = 50000
@@ -222,7 +225,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.num_ghost = 2
 
     # Choice of BCs at xlower and xupper:
-    #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
+    #   0 or 'user'     => user specified (must modify bc1.f to use this option)
     #   1 or 'extrap'   => extrapolation (non-reflecting outflow)
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
@@ -231,13 +234,6 @@ def setrun(claw_pkg='geoclaw'):
     #clawdata.bc_lower[0] = 'wall'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-    # Specify type of each aux variable in amrdata.auxtype.
-    # This must be a list of length maux, each element of which is one of:
-    #   'center',  'capacity', 'xleft'  (see documentation).
-    # Isn't used for this non-amr version, but still expected in data.
-
-    amrdata = rundata.amrdata
-    amrdata.aux_type = ['center','capacity']
 
     geo_data = rundata.geo_data
 
@@ -251,6 +247,14 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.friction_forcing = True
     geo_data.manning_coefficient =.025
 
+    geo_data.coordinate_system = 1  # linear distance (meters)
+
+    topo_data = rundata.topo_data
+    topo_data.topofiles.append([1, 'celledges.data'])
+
+    dtopo_data = rundata.dtopo_data
+    dtopo_data.dtopofiles.append([1, 'dtopo_okada.dtt1'])
+    dtopo_data.dt_max_dtopo = 0.5
 
 
     # ---------------
@@ -265,12 +269,12 @@ def setrun(claw_pkg='geoclaw'):
     # to corresponding xc as follows:
 
     if 1:
-        xp_gauges = [-100e3, -20e3]   # km
+        xp_gauges = [-80e3, -10e3, 0e3]   # km
         for k,xp_g in enumerate(xp_gauges):
             gaugeno = k+1  
             # compute computational point xc_g that maps to xp_g:
-            ii = np.where(xp < xp_g)[0][-1]
-            xp_frac = (xp_g - xp[ii])/(xp[ii+1] - xp[ii])
+            ii = np.where(xp_edge < xp_g)[0][-1]
+            xp_frac = (xp_g - xp_edge[ii])/(xp_edge[ii+1] - xp_edge[ii])
             xc_g = (ii + xp_frac)/float(mx)
             print('gaugeno = %i: physical location xp_g = %g maps to xc_g = %.12f' \
                   % (gaugeno,xp_g, xc_g))
@@ -286,4 +290,3 @@ if __name__ == '__main__':
     import sys
     rundata = setrun(*sys.argv[1:])
     rundata.write()
-

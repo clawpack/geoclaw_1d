@@ -18,8 +18,7 @@ break up of the dispersive wave into a train of solitary waves.
 
 The file `make_celledges.py` sets up the domain and computational grid.
 A piecewise linear topography is defined by specifying the topography `z`
-value at a set of nodes `x` in the `xzpairs` list.  Set up based on the
-Revere Beach composite beach geometry used in the physical wave tank.
+value at a set of nodes `x` in the `xzpairs` list. 
 
 A nonuniform grid with `mx` grid cells is used with cell widths related
 to the still water depth in such a way that the Courant number is roughly
@@ -49,13 +48,18 @@ To use::
 
     python plot_gauges.py  # to create a plot of gauges to compare to paper
 
-The `plot_gauges.py` script should create a plot 
-`GaugesFigure5.png <Gauges.png>`__ 
+The `plot_gauges.py` script should create a plot similar to
+`GeoClawFigure5.png <GeoClawFigure5.png>`__ 
 that can be compared to 
 `Figure 5 <MatsuyamaFigure5.png>`__ 
 in the paper.
 
+The gauge plot produced also includes wave tank observations (as a red
+curve) for some gauges.  This data comes from the file
+data_wavegauge.csv (kindly provided by Prof. Matsuyama).
+
 Version
 -------
 
-Pre-release, April, 2021
+August, 2023
+

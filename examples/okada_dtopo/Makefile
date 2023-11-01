@@ -51,7 +51,6 @@ EXCLUDE_SOURCES = \
 MODULES = \
 
 SOURCES = \
-  qinit.f90 \
 
 
 #-------------------------------------------------------------------
@@ -59,13 +58,17 @@ SOURCES = \
 include $(CLAWMAKE)
 
 # Construct the topography data
-.PHONY: topo all
+.PHONY: topo dtopo all
 
 topo:
-	python makegrid.py
+	python make_celledges.py
+
+dtopo:
+	python make_dtopo.py
 
 all: 
 	$(MAKE) topo
+	$(MAKE) dtopo
 	$(MAKE) .plots
 	$(MAKE) .htmls
 

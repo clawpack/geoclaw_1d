@@ -25,15 +25,15 @@ RESTART ?= False                    # Should = clawdata.restart in setrun
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS =  -llapack -lblas -g
-#FFLAGS ?=
+FFLAGS = -llapack -lblas -O2
+
 
 # ---------------------------------
 # package sources for this program:
 # ---------------------------------
 
-GEOLIB = $(CLAW)/geoclaw_1d/src/1d_classic/bouss
-include $(GEOLIB)/Makefile.geoclaw_1d_classic_bouss
+BOUSSLIB = $(CLAW)/geoclaw_1d/src/1d_classic/bouss
+include $(BOUSSLIB)/Makefile.geoclaw_1d_classic_bouss
 
 # ---------------------------------------
 # package sources specifically to exclude
@@ -54,6 +54,7 @@ MODULES = \
 SOURCES = \
   qinit.f90 \
   setprob.f90 \
+  #$(BOUSSLIB)/lapack_tridiag.f \  # alternative to linking -lapack -blas
 
 
 #-------------------------------------------------------------------

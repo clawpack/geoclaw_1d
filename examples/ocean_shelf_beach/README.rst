@@ -44,4 +44,4 @@ To use::
 Version
 -------
 
-Pre-release, April, 2021
+October 2023

@@ -84,17 +84,20 @@ def setrun(claw_pkg='geoclaw'):
     # Number of grid cells:
     clawdata.num_cells[0] = mx
     
-    from clawpack.geoclaw_1d.data import GridData1D
-    rundata.add_data(GridData1D(),'grid_data')
+    # 1D geoclaw requires grid_data:
     rundata.grid_data.grid_type = grid_type  # should be set to 2 above
     rundata.grid_data.fname_celledges = fname_celledges
+    rundata.grid_data.monitor_fgmax = False  # record max h,s,etc in each cell?
+    rundata.grid_data.monitor_runup = False  # record first and last wet cells?
+    rundata.grid_data.monitor_total_zeta = False # record "total mass in wave"?
 
+    # To use Boussinesq solver, add bouss_data parameters here
+    # Also make sure to use the correct Makefile pointing to bouss version
     from clawpack.geoclaw_1d.data import BoussData1D
     rundata.add_data(BoussData1D(),'bouss_data')
-    rundata.bouss_data.bouss = True
-    rundata.bouss_data.B_param = 1./15.
-    rundata.bouss_data.sw_depth0 = 0.005
-    rundata.bouss_data.sw_depth1 = 0.005
+
+    rundata.bouss_data.bouss_equations = 2    # 0=SWE, 1=MS, 2=SGN
+    rundata.bouss_data.bouss_min_depth = 0.06  # depth to switch to SWE
 
     # ---------------
     # Size of system:
@@ -151,12 +154,12 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every step_interval timesteps over total_steps timesteps:
-        clawdata.output_step_interval = 1
-        clawdata.total_steps = 10
+        clawdata.output_step_interval = 10
+        clawdata.total_steps = 100
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+    clawdata.output_format = 'ascii'  # 'ascii' is only option currently
 
     clawdata.output_q_components = 'all'   # could be list such as [True,True]
     clawdata.output_aux_components = 'all'  # could be list
@@ -236,7 +239,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.num_ghost = 2
 
     # Choice of BCs at xlower and xupper:
-    #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
+    #   0 or 'user'     => user specified (must modify bc1.f to use this option)
     #   1 or 'extrap'   => extrapolation (non-reflecting outflow)
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
@@ -244,14 +247,6 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.bc_lower[0] = 'extrap'   # at xlower
     clawdata.bc_upper[0] = 'wall'   # at xupper
 
-
-    # Specify type of each aux variable in amrdata.auxtype.
-    # This must be a list of length maux, each element of which is one of:
-    #   'center',  'capacity', 'xleft'  (see documentation).
-    # Isn't used for this non-amr version, but still expected in data.
-
-    amrdata = rundata.amrdata
-    amrdata.aux_type = ['center','capacity']
 
     geo_data = rundata.geo_data
 

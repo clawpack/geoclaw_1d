@@ -15,7 +15,7 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
     use geoclaw_module, only: dry_tolerance, grav, DEG2RAD
     use geoclaw_module, only: friction_forcing
     use geoclaw_module, only: frictioncoeff => friction_coefficient
-    use geoclaw_module, only: earth_radius, coordinate_system
+    use geoclaw_module, only: earth_radius, coordinate_system, sphere_source
     use grid_module, only: xcell
 
 
@@ -43,7 +43,6 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
 !      ----------------------------------------------------------------
 
-    !if (radial) then  ! OLD
     if (coordinate_system == -1) then
         ! radial source term for SWE:
         do i=1,mx
@@ -59,15 +58,20 @@ subroutine src1(meqn,mbc,mx,xlower,dx,q,maux,aux,t,dt)
 
 !      ----------------------------------------------------------------
 
-    if (coordinate_system == 2) then
-        ! source term for x = latitude in degrees -90 <= x <= 90,
+    if ((coordinate_system == 2) .and. (sphere_source > 0)) then
+        ! add in spherical source term in mass equation
+        ! if sphere_source in [1,2],
+        ! and also in momentum equations if sphere_source == 2
+        ! In this case, x = latitude in degrees -90 <= x <= 90,
         ! u = velocity in latitude direction (m/s) on sphere:
         do i=1,mx
             if (q(1,i) .gt. dry_tolerance) then
                 tanxR = tan(xcell(i)*DEG2RAD) / earth_radius
                 q(1,i) = q(1,i) + dt * tanxR * q(2,i)
-                u = q(2,i)/q(1,i)
-                q(2,i) = q(2,i) + dt * tanxR * q(1,i)*u**2
+                if (sphere_source == 2) then
+                    u = q(2,i)/q(1,i)
+                    q(2,i) = q(2,i) + dt * tanxR * q(1,i)*u**2
+                endif
             endif
          enddo
      endif

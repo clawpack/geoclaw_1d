@@ -34,7 +34,7 @@ module geoclaw_module
     real(kind=8) :: grav, rho_air, ambient_pressure, earth_radius, sea_level
     ! Water density can be an array to handle multiple layers
     real(kind=8), allocatable :: rho(:)
-    integer :: coordinate_system
+    integer :: coordinate_system, sphere_source
 
     ! Rotational velocity of Earth
     real(kind=8), parameter :: omega = 2.0d0 * pi / 86164.2d0
@@ -100,6 +100,7 @@ contains
             read(unit,*) ambient_pressure
             read(unit,*) earth_radius
             read(unit,*) coordinate_system
+            read(unit,*) sphere_source
             read(unit,*) sea_level
             read(unit,*)
             read(unit,*) coriolis_forcing

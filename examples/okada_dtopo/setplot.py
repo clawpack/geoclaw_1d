@@ -1,6 +1,7 @@
 
 
 import os, sys
+import numpy
 
 try:
     from clawpack.geoclaw_1d import geoplot
@@ -8,7 +9,6 @@ except:
     print('Could not import from geoclaw_1d')
 
 from clawpack.geoclaw_1d.nonuniform_grid_tools import make_mapc2p
-import numpy
 
 fname_celledges = os.path.abspath('celledges.data')
 
@@ -25,34 +25,19 @@ try:
 except:
     xmax = None
     print('Failed to load ',fname)
-    
+
 #xmax = None # to suppress plotting max elevation as red curve 
 
-xlimits = [-100e3,1e3]
-
+xlimits = [-200e3,1e3]
 
 def setplot(plotdata):
 
     plotdata.clearfigures()
 
-    outdir1 = plotdata.outdir
-    mapc2p1, mx_edge, xp_edge = make_mapc2p(fname_celledges)
+    fname1 = os.path.join(plotdata.outdir, fname_celledges)
+    mapc2p1, mx_edge, xp_edge = make_mapc2p(fname1)
 
-    def fixticks1(current_data):
-        from pylab import ticklabel_format, grid,tight_layout
-        ticklabel_format(useOffset=False)
-        grid(True)
-        tight_layout()
 
-    def fixticks(current_data):
-        from pylab import ticklabel_format, plot,grid,gca
-        ticklabel_format(useOffset=False)
-        if xmax is not None:
-            plot(xmax, etamax, 'r')
-        grid(True)
-        legend_tools.add_legend(['surface eta', 'maximum eta'],
-            colors=['b','r'], loc='lower right')
-            
     def fix_layout(current_data):
         from pylab import tight_layout
         tight_layout()
@@ -64,20 +49,13 @@ def setplot(plotdata):
             plot(xmax, etamax, 'r')
             add_legend(['max eta over simulation','surface elevation eta'],
                    ['r','b'], framealpha=1)
-        
-    def velocity(current_data):
-        from pylab import where,nan
-        q = current_data.q
-        hpos = where(q[0,:] < 1e-3, nan, q[0,:])
-        u = q[1,:] / hpos
-        return u
 
     plotfigure = plotdata.new_plotfigure(name='domain', figno=0)
-    plotfigure.kwargs = {'figsize':(8,7)}
+    plotfigure.figsize = (8,6)
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(311)'
+    plotaxes.axescmd = 'subplot(211)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-3,10]
+    plotaxes.ylimits = [-5,5]
     plotaxes.title = 'Surface displacement at time h:m:s'
     plotaxes.grid = True
 
@@ -95,35 +73,17 @@ def setplot(plotdata):
     plotitem.mapc2p = mapc2p1
 
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(312)'
+    plotaxes.axescmd = 'subplot(212)'
     plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-1.0,2.0]
-    plotaxes.title = 'Velocity at time h:m:s'
-    plotaxes.grid = True
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = velocity
-    plotitem.color = 'b'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
-
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(313)'
-    plotaxes.xlimits = xlimits
-    plotaxes.ylimits = [-5000,500]
     plotaxes.title = 'Full depth at time h:m:s'
     plotaxes.grid = True
     plotaxes.afteraxes = fix_layout
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
-    
+
     plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
     #plotitem.show = False
     plotitem.plot_var = geoplot.surface
     plotitem.plot_var2 = geoplot.topo
-    plotitem.color = [.5,.5,1]
+    plotitem.color = [0.4,0.4,1] # lighter blue
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
@@ -131,12 +91,6 @@ def setplot(plotdata):
     #plotitem.show = False
     plotitem.plot_var = geoplot.topo
     plotitem.color = 'g'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = geoplot.surface
-    plotitem.color = 'b'
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
@@ -144,26 +98,17 @@ def setplot(plotdata):
     #----------
 
     plotfigure = plotdata.new_plotfigure(name='shore', figno=1)
-    plotfigure.kwargs = {'figsize':(10,4)}
+    plotfigure.figsize = (8,6)
     #plotfigure.show = False
     
+
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = [-1500,500]
-    plotaxes.ylimits = [-10,25]
-    plotaxes.title = 'Zoom around shore at time h:m:s'
+    plotaxes.axescmd = 'subplot(211)'
+    plotaxes.xlimits = [-50e3,1e3]
+    plotaxes.ylimits = [-20,20]
+    plotaxes.title = 'Zoom on shelf at time h:m:s'
     plotaxes.grid = True
     plotaxes.afteraxes = add_etamax
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
-    plotitem.plot_var = geoplot.surface
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
-    plotitem.plot_var = geoplot.surface
-    plotitem.plot_var2 = geoplot.topo
-    plotitem.color = [.5,.5,1]
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p1
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = geoplot.surface
@@ -177,33 +122,64 @@ def setplot(plotdata):
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p1
 
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.axescmd = 'subplot(212)'
+    plotaxes.xlimits = [-100,300]
+    plotaxes.ylimits = [-10,15]
+    plotaxes.title = 'Zoom around shore at time h:m:s'
+    plotaxes.grid = True
+    plotaxes.afteraxes = fix_layout
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = geoplot.surface
+    plotitem.color = 'b'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
+    #plotitem.show = False
+    plotitem.plot_var = geoplot.surface
+    plotitem.plot_var2 = geoplot.topo
+    plotitem.color = 'b'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = geoplot.topo
+    plotitem.color = 'k'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p1
 
 
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='eta', figno=300, \
-                                         type='each_gauge')
+    plotfigure = plotdata.new_plotfigure(name='depth', figno=300, \
+                    type='each_gauge')
+
     plotfigure.clf_each_gauge = True
 
+    # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.time_scale = 1/3600.  # convert seconds to hours
     plotaxes.time_label = 'time (hours) post-quake'
     plotaxes.xlimits = 'auto'
-    #plotaxes.ylimits = [-2,2]
-    plotaxes.title = 'Surface elevation eta'
+    #plotaxes.ylimits = [-2.0, 2.0]
+    plotaxes.title = 'Water depth'
     plotaxes.grid = True
-    
+
+    # Plot depth as blue curve:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 2  # eta
+    plotitem.plot_var = 0
     plotitem.plotstyle = 'b-'
+
 
 
     #-----------------------------------------
 
     # Parameters used only when creating html and/or latex hardcopy
     # e.g., via pyclaw.plotters.frametools.printframes:
-    
+
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
     plotdata.print_framenos = 'all'          # list of frames to print

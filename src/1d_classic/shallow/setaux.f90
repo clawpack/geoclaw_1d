@@ -12,8 +12,8 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
     !use geoclaw_module, only: dry_tolerance !uncomment if needed
     !use geoclaw_module, only: grav  !uncomment if needed
     use geoclaw_module, only: earth_radius, coordinate_system, DEG2RAD
-    use grid_module, only: xp_edge,z_edge,mx_edge
-    use topo_module, only: topo_integrate
+    use grid_module, only: xp_edge,mx_edge
+    use topo_module, only: zcell
 
     implicit none
     integer, intent(in) :: mbc,mx,maux
@@ -22,7 +22,7 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
 
     !locals
     integer :: i,i0,i1,j
-    real(kind=8) :: xcell,zcell,a
+    real(kind=8) :: xcell,a
 
     if (mx+1 .ne. mx_edge) then
         write(6,*) 'mx_edge from grid.data must agree with mx+1'
@@ -31,19 +31,26 @@ subroutine setaux(mbc,mx,xlower,dx,maux,aux)
         stop
         endif
 
-    ! compute topo values and store in aux(1,:):
-    call topo_integrate(mx,mbc,maux,aux)
+    ! store topo values in aux(1,:):
+    ! computation of cell averages is done in read_topo_file or topo_update
 
+    !write(6,*) '+++ Before resetting aux, aux(1,200) = ',aux(1,200)
+    
     do i=1,mx
+        aux(1,i) = zcell(i)
+        !write(6,*) '+++ i,zcell: ',i,zcell(i)
+        ! capacity function for nonuniform grid:
         aux(2,i) = (xp_edge(i+1) - xp_edge(i))/dx
         if (coordinate_system == 2) then
-            ! convert degrees to meters:
+            ! additional factor for latitude coords on sphere: 
+            ! dx in meters = (dx in degrees) * (pi/180) * earth_radius
             aux(2,i) = aux(2,i)* DEG2RAD * earth_radius
         endif
         if (aux(2,i) <= 0.d0) then
             write(6,*) '+++ i,xp_edge(i),xp_edge(i+1): ',i,xp_edge(i),xp_edge(i+1)
             endif
     enddo
+    
 
     aux(:,0) = aux(:,1)
     aux(:,-1) = aux(:,1)

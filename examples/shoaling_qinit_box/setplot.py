@@ -114,41 +114,9 @@ def setplot(plotdata=None):
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p_km
 
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
-    plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
-
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.show = False
-    plotaxes.axescmd = 'subplot(312)'
-    plotaxes.xlimits = xlimits
-    #plotaxes.xlimits = [-100e3,-20e3]
-    #plotaxes.ylimits = [-1000, 1000]
-    #plotaxes.title = 'Full depth'
-    plotaxes.title = 'momentum'
-    plotaxes.afteraxes = fixticks1
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
-    plotitem.show = False
-    plotitem.plot_var = geoplot.surface
-    plotitem.plot_var2 = geoplot.topo
-    plotitem.color = 'b'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.show = False
-    plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 1
     plotitem.color = 'k'
     plotitem.MappedGrid = True
@@ -157,10 +125,12 @@ def setplot(plotdata=None):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'axes([.1,.1,.8,.2])' #'subplot(212)'
     plotaxes.xlimits = xlimits
-    #plotaxes.xlimits = [-100e3,-20e3]
-    #plotaxes.ylimits = [-1000, 1000]
-    #plotaxes.title = 'Full depth'
-    #plotaxes.title = 'topography'
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
+    plotitem.plot_var = geoplot.topo
+    plotitem.color = 'g'
+    plotitem.MappedGrid = True
+    plotitem.mapc2p = mapc2p_km
 
     def fix_topo_plot(current_data):
         from pylab import title,xlabel
@@ -171,68 +141,25 @@ def setplot(plotdata=None):
     plotitem.MappedGrid = True
     plotitem.mapc2p = mapc2p_km
 
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    #plotitem.show = False
-    plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
 
-    #----------
 
-    plotfigure = plotdata.new_plotfigure(name='shore', figno=1)
-    #plotfigure.kwargs = {'figsize':(9,11)}
-    plotfigure.show = False
-    
+    #-----------------------------------------
+    # Figures for gauges
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='q', figno=300, \
+                                         type='each_gauge')
+    plotfigure.clf_each_gauge = True
 
     plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(211)'
-    plotaxes.xlimits = [0,80e3]
-    plotaxes.ylimits = [-4,4]
-    plotaxes.title = 'Zoom on shelf'
-
-    plotaxes.afteraxes = fixticks
-
+    plotaxes.xlimits = 'auto'
+    plotaxes.ylimits = 'auto'
+    plotaxes.title = 'Eta'
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = geoplot.surface
-    #plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
-    #plotitem.plot_var = geoplot.surface
-    #plotitem.plot_var2 = geoplot.topo
-    plotitem.color = 'b'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
+    plotitem.plot_var = 2
+    plotitem.plotstyle = 'b-'
 
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.axescmd = 'subplot(212)'
-    #plotaxes.xlimits = [-2000,2000]
-    plotaxes.xlimits = [-1000,1000]
-    #plotaxes.ylimits = [-10,40]
-    plotaxes.ylimits = [-20,60]
-    plotaxes.title = 'Zoom around shore'
-
-    plotaxes.afteraxes = fixticks
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.show = False
-    plotitem.plot_var = geoplot.surface
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_fill_between')
-    plotitem.plot_var = geoplot.surface
-    plotitem.plot_var2 = geoplot.topo
-    plotitem.color = 'b'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
-
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = geoplot.topo
-    plotitem.color = 'k'
-    plotitem.MappedGrid = True
-    plotitem.mapc2p = mapc2p_km
+    # Parameters used only when creating html and/or latex hardcopy
+    # e.g., via clawpack.visclaw.frametools.printframes:
 
 
     plotdata.printfigs = True          # Whether to output figures

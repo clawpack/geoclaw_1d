@@ -18,6 +18,8 @@ topo_fcn = nonuniform_grid_tools.make_pwlin_topo_fcn(xzpairs)
 
 mx = 8000
 hmin = 0.05  # use uniform grid in shallower water
+#hmin = 5  # try forcing a uniform grid everywhere
+#hmin = 1  # try uniform grid near start of shelf
 
 nonuniform_grid_tools.make_celledges_cfl(xlower, xupper, mx, topo_fcn,
         hmin, fname='celledges.data', plot_topo=True)

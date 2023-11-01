@@ -12,14 +12,16 @@ c
 c     ! Modified for Boussinesq version
 c
 
+      use claw_module, only: t0,tfinal
       use gauges_module, only: set_gauges
       use geoclaw_module, only: set_geo
       use grid_module, only: set_grid, xlower, xupper, mx, mbc
       use grid_module, only: monitor_total_zeta,iunit_total_zeta_mass
       use grid_module, only: monitor_runup,iunit_runup,runup_tolerance
       use grid_module, only: monitor_fgmax,iunit_fgmax
-      use grid_module, only: hmax, smax, xcell
-      use topo_module, only: read_topo_settings
+      use grid_module, only: hmax, smax, hssmax, arrival_time, xcell
+      use topo_module, only: read_topo_settings, read_dtopo_settings
+      use topo_module, only: topo_finalized, t_dtopo, topo_update
       use bouss_module, only: set_bouss
 
       implicit double precision (a-h,o-z)
@@ -190,6 +192,7 @@ c     # set gauges and geoclaw specific quantities:
       call set_geo()
       call set_grid(mx,dx)
       call read_topo_settings()
+      call read_dtopo_settings()
 
       ! read in Boussinesq solver parameters:
       call set_bouss(mx,mbc,mthbc)
@@ -227,10 +230,22 @@ c
          go to 900
       end if
 
+      if (.not. topo_finalized) then
+          if (t_dtopo(1) < t0) then
+              ! initial dtopo motion before start of simulation
+              ! note that in this case topo is updated before qinit is called,
+              ! so ocean at rest data will be on top of deformed topo
+              call topo_update(t0)
+              call setaux(mbc,mx,xlower,dx,maux,aux)
+          endif
+      endif
+      
 c
 c     # set initial conditions:
 c
       call qinit(meqn,mbc,mx,xlower,dx,q,maux,aux)
+      
+
 c
       if (output_t0) then
 c     # output initial data
@@ -329,10 +344,13 @@ c
           write(6,*) 'Writing fgmax.txt file with mx = ',mx
           open(unit=iunit_fgmax, file='fgmax.txt', status='unknown',
      &         form='formatted')
+          write(iunit_fgmax,*) 
+     &          '# xcell, topo, hmax, smax, hssmax, arrival_time'
           do i=1,mx
              etamax = hmax(i) + aux(1,i)
-             write(iunit_fgmax,451) xcell(i),hmax(i),smax(i),etamax
- 451         format(4f16.8)
+             write(iunit_fgmax,451) xcell(i),aux(1,i),hmax(i),smax(i),
+     &             hssmax(i), etamax, arrival_time(i)
+ 451         format(f16.8, 5f16.6, e16.6)
           enddo
           close(iunit_fgmax)
       endif
@@ -359,4 +377,3 @@ c
 c
       return 
       end
-

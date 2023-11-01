@@ -385,6 +385,8 @@ c
 
       use gauges_module, only: num_gauges, update_gauges,
      &                         print_gauges_and_reset_nextLoc
+      use topo_module, only: topo_finalized, topo_update, dt_max_dtopo
+
       implicit double precision (a-h,o-z)
       external bc1,rp1,src1,b4step1
       dimension q(meqn,1-mbc:mx+mbc)
@@ -525,8 +527,13 @@ c
 c           # choose new time step if variable time step
             if (cfl .gt. 0.d0) then
                 dt = dmin1(dtv(2), dt * cflv(2)/cfl)
+                if (.not. topo_finalized) then
+                    dt = dmin1(dt, dt_max_dtopo)
+                endif
                 dtmin = dmin1(dt,dtmin)
                 dtmax = dmax1(dt,dtmax)
+                
+                    
               else
                 dt = dtv(2)
               endif
@@ -543,9 +550,9 @@ c               # reject this step
                 call copyq1(meqn,mbc,mx,work(i0qwork),q)
 c
                 if (method(4) .eq. 1) then
-                   write(6,602) 
+                   write(6,602)  cfl
   602              format('CLAW1 rejecting step... ',
-     &                         'Courant number too large')
+     &                         'Courant number too large: ',d18.8)
                    endif
                 if (method(1).eq.1) then
 c                   # if variable dt, go back and take a smaller step
@@ -556,6 +563,13 @@ c                   # if fixed dt, give up and return
                     go to 900
                   endif
                endif
+               
+         if (.not. topo_finalized) then
+             ! modify topo using dtopo arrays:
+             call topo_update(t)
+             call setaux(mbc,mx,xlower,dx,maux,aux)
+         endif
+      
 c
 c        # see if we are done:
          nv(2) = nv(2) + 1
@@ -590,4 +604,3 @@ c         # Courant number too large with fixed dt
 
        return 
        end
-

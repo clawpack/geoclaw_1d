@@ -77,10 +77,12 @@ def setrun(claw_pkg='geoclaw'):
     # Number of grid cells:
     clawdata.num_cells[0] = mx
     
-    from clawpack.geoclaw_1d.data import GridData1D
-    rundata.add_data(GridData1D(),'grid_data')
+    # 1D geoclaw requires grid_data:
     rundata.grid_data.grid_type = grid_type  # should be set to 2 above
     rundata.grid_data.fname_celledges = fname_celledges
+    rundata.grid_data.monitor_fgmax = False  # record max h,s,etc in each cell?
+    rundata.grid_data.monitor_runup = False  # record first and last wet cells?
+    rundata.grid_data.monitor_total_zeta = False # record "total mass in wave"?
 
 
     # ---------------
@@ -143,7 +145,7 @@ def setrun(claw_pkg='geoclaw'):
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
 
-    clawdata.output_format = 'ascii'      # 'ascii', 'binary', 'netcdf'
+    clawdata.output_format = 'ascii'  # 'ascii' is only option currently
 
     clawdata.output_q_components = 'all'   # could be list such as [True,True]
     clawdata.output_aux_components = 'all'  # could be list
@@ -223,7 +225,7 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.num_ghost = 2
 
     # Choice of BCs at xlower and xupper:
-    #   0 or 'user'     => user specified (must modify bcNamr.f to use this option)
+    #   0 or 'user'     => user specified (must modify bc1.f to use this option)
     #   1 or 'extrap'   => extrapolation (non-reflecting outflow)
     #   2 or 'periodic' => periodic (must specify this at both boundaries)
     #   3 or 'wall'     => solid wall for systems where q(2) is normal velocity
@@ -231,14 +233,6 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.bc_lower[0] = 'extrap'   # at xlower
     clawdata.bc_upper[0] = 'extrap'   # at xupper
 
-
-    # Specify type of each aux variable in amrdata.auxtype.
-    # This must be a list of length maux, each element of which is one of:
-    #   'center',  'capacity', 'xleft'  (see documentation).
-    # Isn't used for this non-amr version, but still expected in data.
-
-    amrdata = rundata.amrdata
-    amrdata.aux_type = ['center','capacity']
 
     geo_data = rundata.geo_data
 
@@ -255,7 +249,9 @@ def setrun(claw_pkg='geoclaw'):
     geo_data.coordinate_system = 1  # linear distance (meters)
 
     topo_data = rundata.topo_data
-    topo_data.topofiles.append([1, 'celledges.data'])
+    # note that same file can be used for topo as for specifying grid:
+    topo_data.topofiles.append([1, fname_celledges])
+
 
 
     # ---------------
@@ -270,7 +266,7 @@ def setrun(claw_pkg='geoclaw'):
     # to corresponding xc as follows:
 
     if 1:
-        xp_gauges = [-100e3, 100e3]   # km
+        xp_gauges = [-100e3, 0.]   # km
         for k,xp_g in enumerate(xp_gauges):
             gaugeno = k+1  
             # compute computational point xc_g that maps to xp_g:
